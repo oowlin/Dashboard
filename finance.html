@@ -1564,6 +1564,13 @@ html, body { scrollbar-width: none; -ms-overflow-style: none; }
   .ord-add-grid .ord-input-ccy,
   .ord-add-grid .ord-input-from { text-align: center; }
   .ord-add-grid .ord-add-btn { text-align: center; }
+  .ord-add-grid .date-field {
+    width: 100%; min-width: 0 !important;
+    padding: 12px 14px;
+    font-size: 15px;
+    box-sizing: border-box;
+  }
+  .ord-add-grid .date-field input[type="date"] { font-size: 15px !important; }
 
   /* ---------- Wishlist add row ---------- */
   .wish-add-row {
@@ -2055,7 +2062,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
       <select id="spendCategory" class="ord-input ord-input-from" title="Budget category">
         <option value="">Uncategorised</option>
       </select>
-      <label class="date-field" title="Date of expense" style="min-width:150px"><span class="date-emoji" aria-hidden="true">📅</span><input type="date" id="spendDate" /></label>
+      <label class="date-field" title="Date of expense" style="min-width:175px"><span class="date-emoji" aria-hidden="true">📅</span><input type="date" id="spendDate" /></label>
       <button class="ord-add-btn" id="spendAddBtn">+ Log</button>
     </div>
   </div>
