@@ -574,8 +574,9 @@ main {
 .sleep-chart-svg { width: 100%; height: 130px; display: block; overflow: visible; }
 @media (max-width: 480px) {
   .sleep-quality-btn { flex: 1 1 calc(33% - 6px); }
-  .sleep-time-input { font-size: 18px; padding: 10px 12px; }
   .sleep-form-row { grid-template-columns: 1fr; gap: 10px; }
+  .sleep-field { min-width: 0; }
+  .sleep-time-input { font-size: 18px; padding: 10px 12px; width: 100%; max-width: 100%; min-width: 0; }
 }
 
 ::selection { background: rgba(224, 118, 88, 0.3); color: var(--text-primary); }
