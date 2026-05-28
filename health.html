@@ -85,6 +85,14 @@ main {
 .section-title::before { content: '≡'; font-size: 14px; opacity: 0.5; }
 
 .water-embed { margin-top: 56px; }
+.water-card {
+  background: var(--bg-card);
+  border-radius: 16px;
+  overflow: hidden;
+  backdrop-filter: blur(24px) saturate(1.2);
+  -webkit-backdrop-filter: blur(24px) saturate(1.2);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+}
 .water-iframe {
   display: block;
   width: 100%;
@@ -565,6 +573,8 @@ main {
 .sleep-chart-svg { width: 100%; height: 130px; display: block; overflow: visible; }
 @media (max-width: 480px) {
   .sleep-quality-btn { flex: 1 1 calc(33% - 6px); }
+  .sleep-time-input { font-size: 15px; padding: 10px 8px; }
+  .sleep-form-row { gap: 8px; }
 }
 
 ::selection { background: rgba(224, 118, 88, 0.3); color: var(--text-primary); }
@@ -621,7 +631,9 @@ main {
 
   <section id="water" class="water-embed">
     <div class="section-title">Water Tracker</div>
-    <iframe id="waterFrame" src="po-water.html" class="water-iframe" scrolling="no" loading="lazy" title="Water Tracker"></iframe>
+    <div class="water-card">
+      <iframe id="waterFrame" src="po-water.html" class="water-iframe" scrolling="no" loading="lazy" title="Water Tracker"></iframe>
+    </div>
   </section>
 
   <section class="sleep-section" id="sleepSection">
