@@ -476,7 +476,7 @@ main {
 .nutri-date-nav:hover { color: var(--text-primary); border-color: rgba(255,255,255,0.2); }
 .nutri-date-nav:disabled { opacity: 0.3; cursor: default; }
 .nutri-meal {
-  background: var(--bg-card); border-radius: 14px; padding: 16px;
+  background: var(--bg-card); border-radius: 14px; padding: 14px 16px;
   margin-bottom: 10px;
   backdrop-filter: blur(24px) saturate(1.2);
   -webkit-backdrop-filter: blur(24px) saturate(1.2);
@@ -484,6 +484,9 @@ main {
 }
 .nutri-meal-header {
   display: flex; align-items: center; gap: 8px;
+  cursor: pointer; user-select: none;
+}
+.nutri-meal.open .nutri-meal-header {
   margin-bottom: 12px; padding-bottom: 10px;
   border-bottom: 1px solid var(--border-soft);
 }
@@ -492,6 +495,13 @@ main {
 .nutri-meal-cals {
   font-family: var(--font-mono); font-size: 11px; color: var(--text-tertiary);
 }
+.nutri-meal-chevron {
+  font-size: 13px; color: var(--text-quaternary);
+  transition: transform 0.2s; line-height: 1;
+}
+.nutri-meal.open .nutri-meal-chevron { transform: rotate(180deg); }
+.nutri-meal-body { display: none; }
+.nutri-meal.open .nutri-meal-body { display: block; }
 .nutri-food-item {
   display: flex; align-items: center; gap: 8px;
   padding: 7px 10px; border-radius: 8px;
@@ -506,6 +516,13 @@ main {
   font-family: var(--font-mono); font-size: 10px;
   color: var(--text-tertiary); white-space: nowrap; flex-shrink: 0;
 }
+.nutri-food-edit-btn {
+  background: transparent; border: none; cursor: pointer;
+  color: var(--text-quaternary); font-size: 12px;
+  padding: 2px 5px; border-radius: 4px; line-height: 1;
+  transition: color 0.15s; font-family: inherit; flex-shrink: 0;
+}
+.nutri-food-edit-btn:hover { color: var(--text-secondary); }
 .nutri-food-del {
   background: transparent; border: none; cursor: pointer;
   color: var(--text-quaternary); font-size: 15px;
@@ -513,7 +530,40 @@ main {
   transition: color 0.15s; font-family: inherit;
 }
 .nutri-food-del:hover { color: #FF6B6B; }
+.nutri-food-edit-row {
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  padding: 8px 10px; border-radius: 8px;
+  background: var(--bg-secondary); margin-bottom: 5px;
+}
+.nutri-food-edit-name {
+  flex: 1; min-width: 120px; font-size: 12px; padding: 5px 8px;
+  border-radius: 7px; border: 1px solid var(--border-strong);
+  background: var(--bg-input); color: var(--text-primary);
+  font-family: inherit;
+}
+.nutri-food-edit-name:focus { outline: none; border-color: rgba(255,255,255,0.3); }
+.nutri-food-edit-srv-label { font-size: 11px; color: var(--text-tertiary); white-space: nowrap; }
+.nutri-food-edit-srv {
+  width: 54px; font-size: 12px; padding: 5px 7px;
+  border-radius: 7px; border: 1px solid var(--border-strong);
+  background: var(--bg-input); color: var(--text-primary);
+  font-family: inherit; text-align: center;
+}
+.nutri-food-edit-srv:focus { outline: none; border-color: rgba(255,255,255,0.3); }
+.nutri-food-edit-save {
+  font-size: 11px; padding: 5px 10px; border-radius: 7px;
+  border: 1px solid rgba(107,227,164,0.45);
+  background: rgba(107,227,164,0.12); color: #6BE3A4;
+  cursor: pointer; font-family: inherit; white-space: nowrap;
+}
+.nutri-food-edit-cancel {
+  font-size: 11px; padding: 5px 10px; border-radius: 7px;
+  border: 1px solid var(--border-strong);
+  background: transparent; color: var(--text-tertiary);
+  cursor: pointer; font-family: inherit;
+}
 .nutri-food-empty { font-size: 12px; color: var(--text-quaternary); font-style: italic; padding: 4px 2px; }
+.nutri-input-wrap { position: relative; margin-top: 10px; }
 .nutri-input-row { display: flex; gap: 6px; }
 .nutri-input {
   flex: 1; font-size: 13px; padding: 8px 11px;
@@ -534,6 +584,22 @@ main {
 .nutri-add-btn:hover { transform: translateY(-1px); }
 .nutri-add-btn:active { transform: translateY(0) scale(0.97); }
 .nutri-add-btn:disabled { opacity: 0.5; cursor: wait; transform: none; }
+.nutri-ac-dropdown {
+  position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+  background: #1C1C1F; border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 12px; overflow: hidden; z-index: 100;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+}
+.nutri-ac-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 13px; cursor: pointer;
+  transition: background 0.1s;
+}
+.nutri-ac-item:not(:last-child) { border-bottom: 1px solid rgba(255,255,255,0.05); }
+.nutri-ac-item:hover { background: rgba(255,255,255,0.05); }
+.nutri-ac-name { font-size: 13px; color: var(--text-primary); flex: 1; text-transform: capitalize; }
+.nutri-ac-macros { font-family: var(--font-mono); font-size: 10px; color: var(--text-quaternary); white-space: nowrap; }
+.nutri-ac-empty { padding: 10px 13px; font-size: 12px; color: var(--text-quaternary); font-style: italic; }
 .nutri-summary {
   background: var(--bg-card); border-radius: 14px; padding: 18px; margin-top: 12px;
   backdrop-filter: blur(24px) saturate(1.2);
@@ -714,7 +780,7 @@ main {
   display: none;
 }
 .sleep-week-body.open { display: block; }
-.sleep-chart-svg { width: 100%; height: 140px; display: block; overflow: visible; }
+.sleep-chart-svg { width: 100%; height: auto; display: block; overflow: visible; }
 @media (max-width: 480px) {
   .sleep-quality-btn { flex: 1 1 calc(33% - 6px); }
 }
@@ -1419,7 +1485,6 @@ main {
 (() => {
   'use strict';
 
-  // ── Get a free key at calorieninjas.com/api ──
   const NX_API_KEY = '7Hl6XgRq8nUaCuo8em1NIdRvxNv8G16WbxSg9nE8';
 
   const MEALS = [
@@ -1432,6 +1497,10 @@ main {
   const DV = { cals: 2000, protein: 50, carbs: 275, fat: 78 };
 
   let viewDate = todayStr();
+  const openMeals = new Set();   // starts empty = all collapsed
+  let editingFood = null;        // { mealKey, idx } | null
+  let acTimer = null;
+  let acMealKey = null;
 
   function todayStr() {
     const now = new Date();
@@ -1450,13 +1519,32 @@ main {
     localStorage.setItem('nutri:log:' + date, JSON.stringify(log));
   }
 
-  async function fetchNutrition(query) {
+  async function fetchNutrition(query, signal) {
     const resp = await fetch(
       'https://api.api-ninjas.com/v1/nutrition?query=' + encodeURIComponent(query),
-      { headers: { 'X-Api-Key': NX_API_KEY } }
+      { headers: { 'X-Api-Key': NX_API_KEY }, signal }
     );
     if (!resp.ok) throw new Error('API ' + resp.status);
     return (await resp.json()).items || [];
+  }
+
+  function makeFoodObj(f) {
+    const base = {
+      calories: f.calories               || 0,
+      protein:  f.protein_g              || 0,
+      carbs:    f.carbohydrates_total_g  || 0,
+      fat:      f.fat_total_g            || 0,
+      sugar:    f.sugar_g                || 0,
+      fiber:    f.fiber_g                || 0,
+      sodium:   f.sodium_mg              || 0,
+    };
+    return {
+      id:       Math.random().toString(36).slice(2, 10),
+      name:     f.name || 'Unknown',
+      servings: 1,
+      _base:    base,
+      ...base,
+    };
   }
 
   function computeTotals(log) {
@@ -1509,40 +1597,71 @@ main {
     document.getElementById('nutriDateLabel').textContent = isToday
       ? 'Today'
       : d.toLocaleDateString('en-AU', { weekday: 'long', month: 'short', day: 'numeric' });
-    document.getElementById('nutriSummaryTitle').textContent = isToday ? "Today's totals" : d.toLocaleDateString('en-AU', { month: 'short', day: 'numeric' }) + ' totals';
+    document.getElementById('nutriSummaryTitle').textContent = isToday
+      ? "Today's totals"
+      : d.toLocaleDateString('en-AU', { month: 'short', day: 'numeric' }) + ' totals';
     document.getElementById('nutriNextDay').disabled = viewDate >= today;
 
     const mealsEl = document.getElementById('nutriMeals');
     mealsEl.innerHTML = '';
+
     MEALS.forEach(meal => {
       const foods    = log[meal.key] || [];
       const mealCals = foods.reduce((s, f) => s + (f.calories || 0), 0);
+      const isOpen   = openMeals.has(meal.key);
 
       const listHTML = foods.length === 0
         ? '<div class="nutri-food-empty">Nothing logged yet</div>'
-        : foods.map((food, idx) => `
-            <div class="nutri-food-item">
-              <span class="nutri-food-name">${esc(food.name)}</span>
-              <span class="nutri-food-macros">${fmt(food.calories)} kcal · P ${fmt(food.protein)}g · C ${fmt(food.carbs)}g · F ${fmt(food.fat)}g</span>
-              <button class="nutri-food-del" data-meal="${meal.key}" data-idx="${idx}" aria-label="Remove">×</button>
-            </div>`).join('');
+        : foods.map((food, idx) => {
+            const isEditing = editingFood && editingFood.mealKey === meal.key && editingFood.idx === idx;
+            if (isEditing) {
+              const srv = food.servings || 1;
+              return `
+                <div class="nutri-food-edit-row" data-meal="${meal.key}" data-idx="${idx}">
+                  <input class="nutri-food-edit-name" type="text" value="${esc(food.name)}" placeholder="Food name" />
+                  <span class="nutri-food-edit-srv-label">×</span>
+                  <input class="nutri-food-edit-srv" type="number" value="${srv}" min="0.1" step="0.5" />
+                  <button class="nutri-food-edit-save" data-action="save-edit" data-meal="${meal.key}" data-idx="${idx}">Save</button>
+                  <button class="nutri-food-edit-cancel" data-action="cancel-edit">Cancel</button>
+                </div>`;
+            }
+            return `
+              <div class="nutri-food-item">
+                <span class="nutri-food-name">${esc(food.name)}${food.servings && food.servings !== 1 ? ` ×${food.servings}` : ''}</span>
+                <span class="nutri-food-macros">${fmt(food.calories)} kcal · P ${fmt(food.protein)}g · C ${fmt(food.carbs)}g · F ${fmt(food.fat)}g</span>
+                <button class="nutri-food-edit-btn" data-action="edit-food" data-meal="${meal.key}" data-idx="${idx}" title="Edit">✎</button>
+                <button class="nutri-food-del" data-meal="${meal.key}" data-idx="${idx}" aria-label="Remove">×</button>
+              </div>`;
+          }).join('');
 
       const card = document.createElement('div');
-      card.className = 'nutri-meal';
+      card.className = 'nutri-meal' + (isOpen ? ' open' : '');
+      card.dataset.meal = meal.key;
       card.innerHTML = `
-        <div class="nutri-meal-header">
+        <div class="nutri-meal-header" data-action="toggle-meal" data-meal="${meal.key}">
           <span class="nutri-meal-icon">${meal.icon}</span>
           <span class="nutri-meal-name">${meal.label}</span>
           ${mealCals > 0 ? `<span class="nutri-meal-cals">${fmt(mealCals)} kcal</span>` : ''}
+          <span class="nutri-meal-chevron">▾</span>
         </div>
-        <div class="nutri-food-list">${listHTML}</div>
-        <div class="nutri-input-row">
-          <input class="nutri-input" type="text" placeholder="e.g. 2 eggs and toast" autocomplete="off" />
-          <button class="nutri-add-btn" data-meal="${meal.key}">+ Add</button>
+        <div class="nutri-meal-body">
+          <div class="nutri-food-list">${listHTML}</div>
+          <div class="nutri-input-wrap">
+            <div class="nutri-input-row">
+              <input class="nutri-input" type="text" data-meal="${meal.key}"
+                placeholder="e.g. 2 eggs and toast" autocomplete="off" />
+              <button class="nutri-add-btn" data-action="add-food" data-meal="${meal.key}">+ Add</button>
+            </div>
+            <div class="nutri-ac-dropdown" hidden data-meal="${meal.key}"></div>
+          </div>
         </div>`;
       mealsEl.appendChild(card);
     });
 
+    updateTotals(log);
+  }
+
+  function updateTotals(log) {
     const t = computeTotals(log);
     document.getElementById('totalCals').textContent    = fmt(t.cals);
     document.getElementById('totalProtein').textContent = fmt(t.protein);
@@ -1563,29 +1682,20 @@ main {
       : tips.map(tip => `<div class="nutri-tip">${esc(tip)}</div>`).join('');
   }
 
-  async function addFood(mealKey, inputEl, btnEl) {
-    const query = inputEl.value.trim();
+  async function addFoodFromQuery(mealKey, query, btnEl) {
     if (!query) return;
     btnEl.disabled = true;
     btnEl.textContent = '…';
     try {
-      const foods = await fetchNutrition(query);
+      const foods = await fetchNutrition(query, null);
+      if (foods.length === 0) {
+        btnEl.textContent = 'Not found';
+        setTimeout(() => { btnEl.textContent = '+ Add'; btnEl.disabled = false; }, 2000);
+        return;
+      }
       const log = getLog(viewDate);
-      foods.forEach(f => {
-        log[mealKey].push({
-          id: Math.random().toString(36).slice(2, 10),
-          name:     f.name                    || 'Unknown',
-          calories: f.calories                || 0,
-          protein:  f.protein_g               || 0,
-          carbs:    f.carbohydrates_total_g   || 0,
-          fat:      f.fat_total_g             || 0,
-          sugar:    f.sugar_g                 || 0,
-          fiber:    f.fiber_g                 || 0,
-          sodium:   f.sodium_mg               || 0,
-        });
-      });
+      foods.forEach(f => log[mealKey].push(makeFoodObj(f)));
       saveLog(viewDate, log);
-      inputEl.value = '';
       renderAll();
     } catch {
       btnEl.textContent = 'Error';
@@ -1596,41 +1706,186 @@ main {
     btnEl.disabled = false;
   }
 
+  function addFoodDirect(mealKey, foodObj) {
+    const log = getLog(viewDate);
+    log[mealKey].push(foodObj);
+    saveLog(viewDate, log);
+    openMeals.add(mealKey);
+    renderAll();
+  }
+
+  function hideAllDropdowns() {
+    document.querySelectorAll('.nutri-ac-dropdown').forEach(d => {
+      d.hidden = true;
+      d.innerHTML = '';
+    });
+  }
+
+  function showDropdown(mealKey, items) {
+    const dd = document.querySelector(`.nutri-ac-dropdown[data-meal="${mealKey}"]`);
+    if (!dd) return;
+    if (items === null) {
+      dd.innerHTML = '<div class="nutri-ac-empty">Searching…</div>';
+      dd.hidden = false;
+      return;
+    }
+    if (items.length === 0) {
+      dd.innerHTML = '<div class="nutri-ac-empty">No results found</div>';
+      dd.hidden = false;
+      return;
+    }
+    dd.innerHTML = items.map((f, i) => `
+      <div class="nutri-ac-item" data-ac-idx="${i}">
+        <span class="nutri-ac-name">${esc(f.name)}</span>
+        <span class="nutri-ac-macros">${fmt(f.calories)} kcal · P${fmt(f.protein_g || 0)}g · C${fmt(f.carbohydrates_total_g || 0)}g · F${fmt(f.fat_total_g || 0)}g</span>
+      </div>`).join('');
+    dd.dataset.results = JSON.stringify(items);
+    dd.hidden = false;
+  }
+
+  function triggerAutocomplete(mealKey, query) {
+    clearTimeout(acTimer);
+    if (query.length < 3) { hideAllDropdowns(); return; }
+    acMealKey = mealKey;
+    const dd = document.querySelector(`.nutri-ac-dropdown[data-meal="${mealKey}"]`);
+    if (dd) { dd.innerHTML = '<div class="nutri-ac-empty">Searching…</div>'; dd.hidden = false; }
+    acTimer = setTimeout(async () => {
+      try {
+        const items = await fetchNutrition(query, null);
+        if (acMealKey === mealKey) showDropdown(mealKey, items);
+      } catch { hideAllDropdowns(); }
+    }, 500);
+  }
+
+  const mealsEl = document.getElementById('nutriMeals');
+
+  mealsEl.addEventListener('input', e => {
+    const inp = e.target.closest('.nutri-input');
+    if (!inp) return;
+    triggerAutocomplete(inp.dataset.meal, inp.value.trim());
+  });
+
+  mealsEl.addEventListener('click', e => {
+    const target = e.target.closest('[data-action]');
+    if (!target) return;
+    const action = target.dataset.action;
+
+    if (action === 'toggle-meal') {
+      const key = target.dataset.meal;
+      if (openMeals.has(key)) openMeals.delete(key); else openMeals.add(key);
+      editingFood = null;
+      renderAll();
+      return;
+    }
+
+    if (action === 'add-food') {
+      const key = target.dataset.meal;
+      const inp = mealsEl.querySelector(`.nutri-input[data-meal="${key}"]`);
+      hideAllDropdowns();
+      if (inp) addFoodFromQuery(key, inp.value.trim(), target).then(() => {
+        const freshInp = mealsEl.querySelector(`.nutri-input[data-meal="${key}"]`);
+        if (freshInp) freshInp.value = '';
+      });
+      return;
+    }
+
+    if (action === 'edit-food') {
+      editingFood = { mealKey: target.dataset.meal, idx: parseInt(target.dataset.idx, 10) };
+      openMeals.add(target.dataset.meal);
+      renderAll();
+      const editRow = mealsEl.querySelector('.nutri-food-edit-name');
+      if (editRow) editRow.focus();
+      return;
+    }
+
+    if (action === 'cancel-edit') {
+      editingFood = null;
+      renderAll();
+      return;
+    }
+
+    if (action === 'save-edit') {
+      const key = target.dataset.meal;
+      const idx = parseInt(target.dataset.idx, 10);
+      const row = target.closest('.nutri-food-edit-row');
+      const newName = row.querySelector('.nutri-food-edit-name').value.trim();
+      const newSrv  = parseFloat(row.querySelector('.nutri-food-edit-srv').value) || 1;
+      const log = getLog(viewDate);
+      const food = log[key][idx];
+      const base = food._base || { calories: food.calories, protein: food.protein,
+        carbs: food.carbs, fat: food.fat, sugar: food.sugar, fiber: food.fiber, sodium: food.sodium };
+      const oldSrv = food.servings || 1;
+      food.name     = newName || food.name;
+      food.servings = newSrv;
+      food._base    = base;
+      food.calories = base.calories * newSrv;
+      food.protein  = base.protein  * newSrv;
+      food.carbs    = base.carbs    * newSrv;
+      food.fat      = base.fat      * newSrv;
+      food.sugar    = base.sugar    * newSrv;
+      food.fiber    = base.fiber    * newSrv;
+      food.sodium   = base.sodium   * newSrv;
+      saveLog(viewDate, log);
+      editingFood = null;
+      renderAll();
+      return;
+    }
+
+  });
+
+  mealsEl.addEventListener('click', e => {
+    const del = e.target.closest('.nutri-food-del');
+    if (del) {
+      const log = getLog(viewDate);
+      log[del.dataset.meal].splice(parseInt(del.dataset.idx, 10), 1);
+      saveLog(viewDate, log);
+      editingFood = null;
+      renderAll();
+    }
+    const acItem = e.target.closest('.nutri-ac-item');
+    if (acItem) {
+      const dd = acItem.closest('.nutri-ac-dropdown');
+      if (!dd) return;
+      const items = JSON.parse(dd.dataset.results || '[]');
+      const idx   = parseInt(acItem.dataset.acIdx, 10);
+      const f     = items[idx];
+      if (!f) return;
+      const mealKey = dd.dataset.meal;
+      hideAllDropdowns();
+      const inp = mealsEl.querySelector(`.nutri-input[data-meal="${mealKey}"]`);
+      if (inp) inp.value = '';
+      addFoodDirect(mealKey, makeFoodObj(f));
+    }
+  });
+
+  mealsEl.addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    const inp = e.target.closest('.nutri-input');
+    if (!inp) return;
+    const mealKey = inp.dataset.meal;
+    const btn = mealsEl.querySelector(`.nutri-add-btn[data-meal="${mealKey}"]`);
+    hideAllDropdowns();
+    if (btn) addFoodFromQuery(mealKey, inp.value.trim(), btn).then(() => {
+      const freshInp = mealsEl.querySelector(`.nutri-input[data-meal="${mealKey}"]`);
+      if (freshInp) freshInp.value = '';
+    });
+  });
+
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.nutri-input-wrap')) hideAllDropdowns();
+  });
+
   function offsetDate(str, days) {
     const d = new Date(str + 'T12:00:00');
     d.setDate(d.getDate() + days);
     return d.toISOString().slice(0, 10);
   }
 
-  document.getElementById('nutriMeals').addEventListener('click', e => {
-    const del = e.target.closest('.nutri-food-del');
-    if (del) {
-      const log = getLog(viewDate);
-      log[del.dataset.meal].splice(parseInt(del.dataset.idx, 10), 1);
-      saveLog(viewDate, log);
-      renderAll();
-      return;
-    }
-    const btn = e.target.closest('.nutri-add-btn');
-    if (btn) {
-      const inp = btn.closest('.nutri-input-row').querySelector('.nutri-input');
-      addFood(btn.dataset.meal, inp, btn);
-    }
-  });
-
-  document.getElementById('nutriMeals').addEventListener('keydown', e => {
-    if (e.key !== 'Enter') return;
-    const inp = e.target.closest('.nutri-input');
-    if (!inp) return;
-    const btn = inp.closest('.nutri-input-row').querySelector('.nutri-add-btn');
-    if (btn) addFood(btn.dataset.meal, inp, btn);
-  });
-
   document.getElementById('nutriPrevDay').addEventListener('click', () => {
-    viewDate = offsetDate(viewDate, -1); renderAll();
+    viewDate = offsetDate(viewDate, -1); editingFood = null; renderAll();
   });
   document.getElementById('nutriNextDay').addEventListener('click', () => {
-    if (viewDate < todayStr()) { viewDate = offsetDate(viewDate, 1); renderAll(); }
+    if (viewDate < todayStr()) { viewDate = offsetDate(viewDate, 1); editingFood = null; renderAll(); }
   });
 
   if (NX_API_KEY === 'YOUR_API_KEY') {
