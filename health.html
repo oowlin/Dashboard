@@ -674,11 +674,11 @@ main {
     <div class="section-title">Nutrition Log</div>
 
     <div id="nutriSetup" class="nutri-setup" style="display:none">
-      <div class="nutri-setup-title">🔑 Nutritionix API keys needed</div>
+      <div class="nutri-setup-title">🔑 CalorieNinjas API key needed</div>
       <div class="nutri-setup-body">
-        Get a free key at <a href="https://developer.nutritionix.com" target="_blank" rel="noopener">developer.nutritionix.com</a>
-        (free tier: 200 requests/day), then paste your App ID and App Key into
-        <code>NX_APP_ID</code> and <code>NX_APP_KEY</code> near the bottom of health.html.
+        Get a free key at <a href="https://www.calorieninjas.com/api" target="_blank" rel="noopener">calorieninjas.com/api</a>
+        (free tier: 10,000 requests/month, no credit card), then paste it into
+        <code>NX_API_KEY</code> near the bottom of health.html.
       </div>
     </div>
 
@@ -725,8 +725,8 @@ main {
             <div class="nutri-sec-val" id="totalFiber">0<span class="nutri-unit">g</span></div>
           </div>
           <div class="nutri-sec-item">
-            <div class="nutri-sec-label">Calcium</div>
-            <div class="nutri-sec-val" id="totalCalcium">0<span class="nutri-unit">mg</span></div>
+            <div class="nutri-sec-label">Sodium</div>
+            <div class="nutri-sec-val" id="totalSodium">0<span class="nutri-unit">mg</span></div>
           </div>
         </div>
       </div>
@@ -1260,9 +1260,8 @@ main {
 (() => {
   'use strict';
 
-  // ── Get free keys at developer.nutritionix.com ──
-  const NX_APP_ID  = 'YOUR_APP_ID';
-  const NX_APP_KEY = 'YOUR_APP_KEY';
+  // ── Get a free key at calorieninjas.com/api ──
+  const NX_API_KEY = 'YOUR_API_KEY';
 
   const MEALS = [
     { key: 'breakfast', icon: '🌅', label: 'Breakfast' },
@@ -1293,21 +1292,16 @@ main {
   }
 
   async function fetchNutrition(query) {
-    const resp = await fetch('https://trackapi.nutritionix.com/v2/natural/nutrients', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-app-id': NX_APP_ID,
-        'x-app-key': NX_APP_KEY,
-      },
-      body: JSON.stringify({ query }),
-    });
+    const resp = await fetch(
+      'https://api.calorieninjas.com/v1/nutrition?query=' + encodeURIComponent(query),
+      { headers: { 'X-Api-Key': NX_API_KEY } }
+    );
     if (!resp.ok) throw new Error('API ' + resp.status);
-    return (await resp.json()).foods || [];
+    return (await resp.json()).items || [];
   }
 
   function computeTotals(log) {
-    const t = { cals: 0, protein: 0, carbs: 0, fat: 0, sugar: 0, fiber: 0, calcium: 0, iron: 0 };
+    const t = { cals: 0, protein: 0, carbs: 0, fat: 0, sugar: 0, fiber: 0, sodium: 0 };
     MEALS.forEach(m => {
       (log[m.key] || []).forEach(f => {
         t.cals    += f.calories || 0;
@@ -1316,8 +1310,7 @@ main {
         t.fat     += f.fat      || 0;
         t.sugar   += f.sugar    || 0;
         t.fiber   += f.fiber    || 0;
-        t.calcium += f.calcium  || 0;
-        t.iron    += f.iron     || 0;
+        t.sodium  += f.sodium   || 0;
       });
     });
     return t;
@@ -1330,15 +1323,14 @@ main {
   function generateTips(t, n) {
     if (n === 0) return [];
     const tips = [];
-    if (t.cals < 800)              tips.push('Calorie intake looks very low — make sure all meals are logged');
-    if (t.protein < 40)            tips.push('Low protein — try chicken, eggs, Greek yogurt, or a protein shake');
-    if (t.sugar > 55)              tips.push('High sugar — swap juice and sweet snacks for whole fruit or water');
-    if (t.fiber < 14)              tips.push('Low fiber — add vegetables, oats, beans, or whole grain bread');
-    if (t.calcium < 350)           tips.push('Low calcium — drink some milk, eat yogurt, cheese, or leafy greens');
-    if (t.iron < 5)                tips.push('Low iron — try red meat, lentils, spinach, or fortified cereal');
+    if (t.cals < 800)               tips.push('Calorie intake looks very low — make sure all meals are logged');
+    if (t.protein < 40)             tips.push('Low protein — try chicken, eggs, Greek yogurt, or a protein shake');
+    if (t.sugar > 55)               tips.push('High sugar — swap juice and sweet snacks for whole fruit or water');
+    if (t.fiber < 14)               tips.push('Low fiber — add vegetables, oats, beans, or whole grain bread');
+    if (t.sodium > 2300)            tips.push('High sodium — watch processed foods, sauces, and salty snacks');
     if (t.fat < 18 && t.cals > 600) tips.push('Low healthy fats — add avocado, nuts, olive oil, or oily fish');
-    if (t.carbs > 350)             tips.push('High carbs — consider swapping refined carbs for vegetables or protein');
-    if (tips.length === 0)         tips.push('Great balance today — keep it up!');
+    if (t.carbs > 350)              tips.push('High carbs — consider swapping refined carbs for vegetables or protein');
+    if (tips.length === 0)          tips.push('Great balance today — keep it up!');
     return tips;
   }
 
@@ -1399,7 +1391,7 @@ main {
     document.getElementById('totalFat').textContent     = fmt(t.fat);
     document.getElementById('totalSugar').innerHTML     = fmt(t.sugar) + '<span class="nutri-unit">g</span>';
     document.getElementById('totalFiber').innerHTML     = fmt(t.fiber) + '<span class="nutri-unit">g</span>';
-    document.getElementById('totalCalcium').innerHTML   = fmt(t.calcium) + '<span class="nutri-unit">mg</span>';
+    document.getElementById('totalSodium').innerHTML    = fmt(t.sodium) + '<span class="nutri-unit">mg</span>';
     document.getElementById('barCals').style.width      = barPct(t.cals,    DV.cals);
     document.getElementById('barProtein').style.width   = barPct(t.protein, DV.protein);
     document.getElementById('barCarbs').style.width     = barPct(t.carbs,   DV.carbs);
@@ -1423,15 +1415,14 @@ main {
       foods.forEach(f => {
         log[mealKey].push({
           id: Math.random().toString(36).slice(2, 10),
-          name: f.food_name + (f.serving_qty && f.serving_qty !== 1 ? ` ×${f.serving_qty}` : ''),
-          calories: f.nf_calories             || 0,
-          protein:  f.nf_protein              || 0,
-          carbs:    f.nf_total_carbohydrate   || 0,
-          fat:      f.nf_total_fat            || 0,
-          sugar:    f.nf_sugars               || 0,
-          fiber:    f.nf_dietary_fiber        || 0,
-          calcium:  f.nf_calcium              || 0,
-          iron:     f.nf_iron                 || 0,
+          name:     f.name                    || 'Unknown',
+          calories: f.calories                || 0,
+          protein:  f.protein_g               || 0,
+          carbs:    f.carbohydrates_total_g   || 0,
+          fat:      f.fat_total_g             || 0,
+          sugar:    f.sugar_g                 || 0,
+          fiber:    f.fiber_g                 || 0,
+          sodium:   f.sodium_mg               || 0,
         });
       });
       saveLog(viewDate, log);
@@ -1483,7 +1474,7 @@ main {
     if (viewDate < todayStr()) { viewDate = offsetDate(viewDate, 1); renderAll(); }
   });
 
-  if (NX_APP_ID === 'YOUR_APP_ID') {
+  if (NX_API_KEY === 'YOUR_API_KEY') {
     document.getElementById('nutriSetup').style.display = '';
   } else {
     document.getElementById('nutriLog').style.display = '';
