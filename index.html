@@ -403,6 +403,29 @@ body::after {
   filter: drop-shadow(0 0 6px rgba(242,192,99,0.6));
 }
 
+/* ===== Top streak banner ===== */
+.streak-banner {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 7px 16px; margin-bottom: 16px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+  font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--text-tertiary);
+  transition: background 0.25s, color 0.25s, border-color 0.25s;
+}
+.streak-banner.active {
+  background: rgba(242,192,99,0.10);
+  color: #F2C063;
+  border-color: rgba(242,192,99,0.30);
+}
+.streak-banner-fire { font-size: 15px; line-height: 1; }
+.streak-banner.active .streak-banner-fire { filter: drop-shadow(0 0 6px rgba(242,192,99,0.6)); }
+.streak-banner-num {
+  font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+  font-size: 14px; font-weight: 700;
+}
+
 .gm-bar {
   display: flex; gap: 4px;
   height: 6px;
@@ -723,6 +746,12 @@ body::after {
 <div class="page">
 
   <h1 class="dash-title">My Dashboard</h1>
+
+  <div class="streak-banner" id="streakBanner">
+    <span class="streak-banner-fire">🔥</span>
+    <span class="streak-banner-num" id="streakBannerNum">0</span>
+    <span>day streak</span>
+  </div>
 
   <div class="ticker-row">
     <div class="goal-ticker" id="goalTicker" aria-live="polite" aria-atomic="true">
@@ -1266,6 +1295,12 @@ body::after {
     const s = loadStreak();
     document.getElementById('gmStreakNum').textContent = s.count;
     document.getElementById('gmStreak').classList.toggle('gm-streak-active', s.count > 0);
+    const banner    = document.getElementById('streakBanner');
+    const bannerNum = document.getElementById('streakBannerNum');
+    if (banner && bannerNum) {
+      bannerNum.textContent = s.count;
+      banner.classList.toggle('active', s.count > 0);
+    }
   }
 
   function renderTomorrowCount() {
