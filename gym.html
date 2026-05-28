@@ -1262,6 +1262,53 @@ img, video, canvas, svg { max-width: 100%; }
 }
 
 .hidden { display: none !important; }
+
+/* ============================================================
+   HEVY SYNC PANEL
+   ============================================================ */
+.hevy-section { margin-bottom: 22px; }
+.hevy-card {
+  background: var(--bg-card);
+  border: 1px solid rgba(110,231,183,0.10);
+  border-radius: 18px;
+  padding: 20px;
+}
+.hevy-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; margin-bottom: 14px;
+}
+.hevy-eyebrow {
+  font-size: 10px; letter-spacing: 0.18em; font-weight: 700;
+  text-transform: uppercase; color: var(--text-3); margin-bottom: 4px;
+}
+.hevy-status-line { font-size: 12px; color: var(--text-2); }
+.hevy-sync-btn {
+  background: var(--good); color: #000;
+  border: none; border-radius: 999px;
+  padding: 8px 18px; font-family: inherit;
+  font-size: 12px; font-weight: 700; cursor: pointer;
+  white-space: nowrap; flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+.hevy-sync-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.hevy-workout-row {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.hevy-workout-row:last-child { border-bottom: none; }
+.hevy-workout-date {
+  font-size: 10px; color: var(--text-3);
+  font-family: var(--font-mono); letter-spacing: 0.06em; margin-bottom: 4px;
+}
+.hevy-workout-title {
+  font-size: 14px; font-weight: 600; margin-bottom: 6px;
+}
+.hevy-exercise-list { display: flex; flex-direction: column; gap: 3px; }
+.hevy-exercise-row { font-size: 12px; color: var(--text-2); }
+.hevy-no-key {
+  text-align: center; padding: 20px;
+  font-size: 12px; color: var(--text-3); font-style: italic;
+}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -1430,6 +1477,21 @@ img, video, canvas, svg { max-width: 100%; }
       </div>
     </div>
 
+  </div>
+
+  <!-- Hevy Sync Panel — hidden until an API key is saved in settings -->
+  <div class="hevy-section" id="hevySection" style="display:none">
+    <div class="wt-divider"><span>HEVY</span></div>
+    <div class="hevy-card">
+      <div class="hevy-head">
+        <div>
+          <div class="hevy-eyebrow">Hevy Workouts</div>
+          <div class="hevy-status-line" id="hevyStatusLine">Ready</div>
+        </div>
+        <button class="hevy-sync-btn" id="hevySyncBtn" type="button">Sync</button>
+      </div>
+      <div id="hevyWorkoutList"></div>
+    </div>
   </div>
 
   <div class="po-header">
@@ -1680,6 +1742,23 @@ img, video, canvas, svg { max-width: 100%; }
         <button class="po-btn-secondary" id="setReset" style="color:var(--bad);border-color:rgba(255,138,138,0.3)">Reset all</button>
       </div>
       <input type="file" id="setImportFile" accept=".json" style="display:none">
+    </div>
+
+    <div class="po-set-section">
+      <h4>Hevy Sync</h4>
+      <p style="font-size:11px;color:var(--text-3);margin:-4px 0 10px;line-height:1.5">
+        Get your API key at <strong style="color:var(--text-2)">hevy.com/settings</strong> → Developer (requires Hevy Pro).
+      </p>
+      <div style="margin-bottom:8px">
+        <input type="password" id="setHevyKey" placeholder="Paste your Hevy API key"
+          style="width:100%;padding:11px 13px;background:rgba(0,0,0,0.28);border:1px solid var(--border);color:var(--text-1);border-radius:10px;font-family:inherit;font-size:13px;outline:none;box-sizing:border-box;">
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="po-btn-secondary" id="setHevySave">Save key</button>
+        <button class="po-btn-secondary" id="setHevySyncNow">Sync now</button>
+        <button class="po-btn-secondary" id="setHevyClear" style="color:var(--bad);border-color:rgba(255,138,138,0.3)">Clear key</button>
+      </div>
+      <div id="setHevyStatus" style="font-size:11px;color:var(--text-3);margin-top:8px;min-height:16px"></div>
     </div>
 
     <div class="po-modal-actions">
@@ -3507,6 +3586,189 @@ img, video, canvas, svg { max-width: 100%; }
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) pcFlushPushOnUnload();
   });
+
+  // ============================================================
+  // HEVY SYNC
+  // Fetches recent workouts from the Hevy API and imports the top
+  // set per exercise per day into state.logs. New exercises are
+  // created automatically if the name doesn't match an existing one.
+  // ============================================================
+  const HEVY_KEY_LS  = 'hevy_api_key';
+  const HEVY_SYNC_LS = 'hevy_last_sync';
+  const HEVY_API     = 'https://api.hevyapp.com';
+
+  function hevyGetKey()    { return localStorage.getItem(HEVY_KEY_LS) || ''; }
+  function hevySaveKey(k)  { if (k) localStorage.setItem(HEVY_KEY_LS, k); else localStorage.removeItem(HEVY_KEY_LS); }
+
+  function hevyFmtDate(iso) {
+    const d = new Date(iso);
+    const dows = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+    const mons = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+    return dows[d.getDay()] + ' ' + mons[d.getMonth()] + ' ' + d.getDate();
+  }
+
+  // Find the heaviest set for an exercise. Converts to user's unit.
+  function hevyTopSet(sets) {
+    if (!sets || !sets.length) return null;
+    let best = null;
+    for (const s of sets) {
+      const wKg = s.weight_kg != null ? s.weight_kg : 0;
+      const w = state.units === 'lb' ? Math.round(wKg * 2.20462 * 4) / 4 : Math.round(wKg * 4) / 4;
+      const r = s.reps || 0;
+      if (!best || w > best.weight || (w === best.weight && r > best.reps)) {
+        best = { weight: w, reps: r, bw: wKg === 0 };
+      }
+    }
+    return best;
+  }
+
+  async function hevyFetchWorkouts(apiKey, page, pageSize) {
+    const resp = await fetch(
+      HEVY_API + '/v1/workouts?page=' + page + '&pageSize=' + pageSize,
+      { headers: { 'api-key': apiKey } }
+    );
+    if (!resp.ok) {
+      const txt = await resp.text().catch(() => '');
+      throw new Error('API returned ' + resp.status + (txt ? ': ' + txt.slice(0, 80) : ''));
+    }
+    return resp.json();
+  }
+
+  // Import workouts into state.logs. Returns count of new sets added.
+  function hevyImportWorkouts(workouts) {
+    let imported = 0;
+    (workouts || []).forEach(wk => {
+      const dateIso = wk.start_time || new Date().toISOString();
+      const dayKey  = dateIso.slice(0, 10);
+      (wk.exercises || []).forEach(ex => {
+        if (!ex.title) return;
+        const top = hevyTopSet(ex.sets);
+        if (!top) return;
+
+        // Match existing exercise by name (case-insensitive), else create one.
+        const nameLow = ex.title.toLowerCase();
+        let found = state.exercises.find(e => e.name.toLowerCase() === nameLow);
+        if (!found) {
+          found = {
+            id: 'hevy_' + nameLow.replace(/[^a-z0-9]/g, '_') + '_' + Date.now(),
+            name: ex.title,
+            gym: 'both',
+            day: state.days[0] ? state.days[0].id : state.filterDay,
+            repMin: 5, repMax: 12, step: 2.5,
+            startWeight: top.weight,
+            bw: top.bw
+          };
+          state.exercises.push(found);
+        }
+
+        const logs = state.logs[found.id] || [];
+        // Skip if we already have a Hevy-sourced entry for this exercise on this day.
+        if (logs.some(l => l.fromHevy && l.date.slice(0, 10) === dayKey)) return;
+        logs.push({ weight: top.weight, reps: top.reps, date: dateIso, fromHevy: true });
+        logs.sort((a, b) => a.date.localeCompare(b.date));
+        state.logs[found.id] = logs;
+        imported++;
+      });
+    });
+    if (imported > 0) saveState();
+    return imported;
+  }
+
+  function hevyRenderWorkouts(workouts) {
+    const list = $('hevyWorkoutList');
+    if (!workouts || !workouts.length) {
+      list.innerHTML = '<div class="hevy-no-key">No workouts found in your Hevy account.</div>';
+      return;
+    }
+    list.innerHTML = workouts.map(wk => {
+      const dur = wk.end_time
+        ? ' · ' + Math.round((new Date(wk.end_time) - new Date(wk.start_time)) / 60000) + 'm'
+        : '';
+      const exRows = (wk.exercises || []).map(ex => {
+        const top = hevyTopSet(ex.sets);
+        let setInfo = (ex.sets || []).length + ' sets';
+        if (top) setInfo = top.bw ? top.reps + ' reps top' : top.weight + state.units + ' × ' + top.reps + ' top';
+        return '<div class="hevy-exercise-row">'
+          + '<span style="color:var(--text-1);font-weight:600">' + escape(ex.title || '') + '</span>'
+          + ' — <span style="font-family:var(--font-mono)">' + setInfo + '</span>'
+          + '</div>';
+      }).join('');
+      return '<div class="hevy-workout-row">'
+        + '<div class="hevy-workout-date">' + hevyFmtDate(wk.start_time) + dur + '</div>'
+        + '<div class="hevy-workout-title">' + escape(wk.title || 'Workout') + '</div>'
+        + '<div class="hevy-exercise-list">' + exRows + '</div>'
+        + '</div>';
+    }).join('');
+  }
+
+  async function hevySync() {
+    const key = hevyGetKey();
+    if (!key) return;
+    const btn   = $('hevySyncBtn');
+    const stat  = $('hevyStatusLine');
+    btn.disabled = true;
+    btn.textContent = 'Syncing…';
+    stat.textContent = 'Fetching from Hevy…';
+    try {
+      const data = await hevyFetchWorkouts(key, 1, 10);
+      const workouts = data.workouts || [];
+      hevyRenderWorkouts(workouts);
+      const n = hevyImportWorkouts(workouts);
+      localStorage.setItem(HEVY_SYNC_LS, new Date().toISOString());
+      const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      stat.textContent = 'Synced at ' + now + (n ? ' · ' + n + ' new sets' : ' · up to date');
+      renderAll();
+    } catch (e) {
+      stat.textContent = 'Sync failed — ' + (e.message || 'check your API key');
+    }
+    btn.disabled = false;
+    btn.textContent = 'Sync';
+  }
+
+  function hevyInitPanel() {
+    const key     = hevyGetKey();
+    const section = $('hevySection');
+    const stat    = $('hevyStatusLine');
+    if (!key) { section.style.display = 'none'; return; }
+    section.style.display = '';
+    const last = localStorage.getItem(HEVY_SYNC_LS);
+    stat.textContent = last ? 'Last synced ' + hevyFmtDate(last) : 'Ready — tap Sync';
+    hevySync();
+  }
+
+  $('hevySyncBtn').addEventListener('click', hevySync);
+
+  // Settings wiring — runs when settingsBtn opens the modal
+  $('settingsBtn').addEventListener('click', () => {
+    $('setHevyKey').value = '';
+    $('setHevyStatus').textContent = hevyGetKey() ? '✓ API key is saved' : 'No key saved yet';
+  }, true); // capture = true so it fires before the existing listener that calls renderSettings
+
+  $('setHevySave').addEventListener('click', () => {
+    const k = $('setHevyKey').value.trim();
+    if (!k) { $('setHevyStatus').textContent = 'Paste a key first.'; return; }
+    hevySaveKey(k);
+    $('setHevyKey').value = '';
+    $('setHevyStatus').textContent = '✓ Key saved.';
+    hevyInitPanel();
+  });
+
+  $('setHevySyncNow').addEventListener('click', async () => {
+    if (!hevyGetKey()) { $('setHevyStatus').textContent = 'Save an API key first.'; return; }
+    $('setHevyStatus').textContent = 'Syncing…';
+    await hevySync();
+    $('setHevyStatus').textContent = '✓ Done.';
+  });
+
+  $('setHevyClear').addEventListener('click', () => {
+    if (!confirm('Remove your Hevy API key?')) return;
+    hevySaveKey('');
+    $('setHevyKey').value = '';
+    $('setHevyStatus').textContent = 'Key cleared.';
+    hevyInitPanel();
+  });
+
+  hevyInitPanel();
 })();
 </script>
 
