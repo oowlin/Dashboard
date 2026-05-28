@@ -461,6 +461,158 @@ main {
   .stack-search-results { width: 100%; }
 }
 
+/* ====== NUTRITION DIARY ====== */
+.nutri-section { margin-top: 32px; }
+.nutri-date-row {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 14px;
+}
+.nutri-date-label {
+  font-family: var(--font-mono); font-size: 12px;
+  color: var(--text-tertiary); flex: 1;
+}
+.nutri-date-nav {
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  color: var(--text-tertiary); font-size: 12px;
+  padding: 4px 10px; border-radius: 8px; cursor: pointer;
+  font-family: inherit; transition: all 0.15s;
+}
+.nutri-date-nav:hover { color: var(--text-primary); border-color: rgba(255,255,255,0.2); }
+.nutri-date-nav:disabled { opacity: 0.3; cursor: default; }
+.nutri-meal {
+  background: var(--bg-card); border-radius: 14px; padding: 16px;
+  margin-bottom: 10px;
+  backdrop-filter: blur(24px) saturate(1.2);
+  -webkit-backdrop-filter: blur(24px) saturate(1.2);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+}
+.nutri-meal-header {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 12px; padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.nutri-meal-icon { font-size: 15px; }
+.nutri-meal-name { font-size: 14px; font-weight: 700; color: var(--text-primary); flex: 1; }
+.nutri-meal-cals {
+  font-family: var(--font-mono); font-size: 11px; color: var(--text-tertiary);
+}
+.nutri-food-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 10px; border-radius: 8px;
+  background: var(--bg-secondary); margin-bottom: 5px;
+}
+.nutri-food-name {
+  font-size: 13px; font-weight: 500; color: var(--text-primary);
+  flex: 1; min-width: 0;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.nutri-food-macros {
+  font-family: var(--font-mono); font-size: 10px;
+  color: var(--text-tertiary); white-space: nowrap; flex-shrink: 0;
+}
+.nutri-food-del {
+  background: transparent; border: none; cursor: pointer;
+  color: var(--text-quaternary); font-size: 15px;
+  padding: 2px 6px; border-radius: 4px; line-height: 1;
+  transition: color 0.15s; font-family: inherit;
+}
+.nutri-food-del:hover { color: #FF6B6B; }
+.nutri-food-empty { font-size: 12px; color: var(--text-quaternary); font-style: italic; padding: 4px 2px; }
+.nutri-input-row { display: flex; gap: 6px; }
+.nutri-input {
+  flex: 1; font-size: 13px; padding: 8px 11px;
+  border-radius: 10px; border: 1px solid var(--border-strong);
+  background: var(--bg-input); color: var(--text-primary);
+  font-family: inherit; transition: border-color 0.18s;
+}
+.nutri-input::placeholder { color: var(--text-quaternary); }
+.nutri-input:focus { outline: none; border-color: rgba(255,255,255,0.3); }
+.nutri-add-btn {
+  font-size: 13px; font-weight: 700; padding: 8px 14px;
+  border-radius: 10px; border: 1px solid rgba(255,255,255,0.85);
+  background: linear-gradient(180deg, #FFFFFF 0%, #E8E5DD 100%);
+  color: #0A0A0B; cursor: pointer; font-family: inherit;
+  white-space: nowrap; transition: transform 0.12s, box-shadow 0.18s;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.55), 0 4px 14px rgba(0,0,0,0.3);
+}
+.nutri-add-btn:hover { transform: translateY(-1px); }
+.nutri-add-btn:active { transform: translateY(0) scale(0.97); }
+.nutri-add-btn:disabled { opacity: 0.5; cursor: wait; transform: none; }
+.nutri-summary {
+  background: var(--bg-card); border-radius: 14px; padding: 18px; margin-top: 12px;
+  backdrop-filter: blur(24px) saturate(1.2);
+  -webkit-backdrop-filter: blur(24px) saturate(1.2);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+}
+.nutri-summary-title {
+  font-family: var(--font-mono); font-size: 10px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--text-tertiary); margin-bottom: 14px;
+}
+.nutri-macros-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+.nutri-macro-card { background: var(--bg-secondary); border-radius: 10px; padding: 12px; }
+.nutri-macro-label {
+  font-family: var(--font-mono); font-size: 9px; color: var(--text-tertiary);
+  text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px;
+}
+.nutri-macro-val {
+  font-size: 22px; font-weight: 700; color: var(--text-primary);
+  line-height: 1; font-variant-numeric: tabular-nums;
+}
+.nutri-unit { font-size: 11px; font-weight: 400; color: var(--text-tertiary); margin-left: 2px; }
+.nutri-macro-bar {
+  height: 3px; background: rgba(255,255,255,0.06);
+  border-radius: 99px; margin-top: 8px; overflow: hidden;
+}
+.nutri-macro-fill {
+  height: 100%; border-radius: 99px;
+  transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.nutri-macro-fill.c-cals    { background: #6BE3A4; }
+.nutri-macro-fill.c-protein { background: #6B8DE3; }
+.nutri-macro-fill.c-carbs   { background: #E3C36B; }
+.nutri-macro-fill.c-fat     { background: #E38D6B; }
+.nutri-secondary { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.nutri-sec-item {
+  background: var(--bg-secondary); border-radius: 8px; padding: 9px 10px;
+  display: flex; flex-direction: column; gap: 3px;
+}
+.nutri-sec-label {
+  font-family: var(--font-mono); font-size: 9px; color: var(--text-quaternary);
+  text-transform: uppercase; letter-spacing: 0.08em;
+}
+.nutri-sec-val { font-size: 15px; font-weight: 700; color: var(--text-primary); font-variant-numeric: tabular-nums; }
+.nutri-tips {
+  margin-top: 12px; padding: 14px 16px;
+  background: rgba(29, 158, 117, 0.07);
+  border: 1px solid rgba(29, 158, 117, 0.18);
+  border-radius: 12px;
+}
+.nutri-tips-title {
+  font-family: var(--font-mono); font-size: 10px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--accent); margin-bottom: 8px;
+}
+.nutri-tip { font-size: 13px; color: var(--text-secondary); line-height: 1.45; padding: 3px 0; }
+.nutri-tip::before { content: '→ '; color: var(--accent); font-weight: 700; }
+.nutri-tips-empty { font-size: 13px; color: var(--text-tertiary); font-style: italic; }
+.nutri-setup {
+  background: var(--bg-card); border: 1px solid var(--border-strong);
+  border-radius: 14px; padding: 22px; text-align: center;
+}
+.nutri-setup-title { font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 8px; }
+.nutri-setup-body { font-size: 12px; color: var(--text-tertiary); line-height: 1.6; }
+.nutri-setup-body a { color: var(--accent); }
+.nutri-setup-body code {
+  font-family: var(--font-mono); font-size: 11px;
+  background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 4px;
+  color: var(--text-secondary);
+}
+@media (max-width: 480px) {
+  .nutri-secondary { grid-template-columns: 1fr 1fr; }
+}
+
 ::selection { background: rgba(224, 118, 88, 0.3); color: var(--text-primary); }
 ::-webkit-scrollbar { width: 10px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -516,6 +668,74 @@ main {
   <section id="water" class="water-embed">
     <div class="section-title">Water Tracker</div>
     <iframe src="po-water.html" class="water-iframe" loading="lazy" title="Water Tracker"></iframe>
+  </section>
+
+  <section class="nutri-section" id="nutriSection">
+    <div class="section-title">Nutrition Log</div>
+
+    <div id="nutriSetup" class="nutri-setup" style="display:none">
+      <div class="nutri-setup-title">🔑 Nutritionix API keys needed</div>
+      <div class="nutri-setup-body">
+        Get a free key at <a href="https://developer.nutritionix.com" target="_blank" rel="noopener">developer.nutritionix.com</a>
+        (free tier: 200 requests/day), then paste your App ID and App Key into
+        <code>NX_APP_ID</code> and <code>NX_APP_KEY</code> near the bottom of health.html.
+      </div>
+    </div>
+
+    <div id="nutriLog" style="display:none">
+      <div class="nutri-date-row">
+        <span class="nutri-date-label" id="nutriDateLabel">Today</span>
+        <button class="nutri-date-nav" id="nutriPrevDay">‹ Prev</button>
+        <button class="nutri-date-nav" id="nutriNextDay">Next ›</button>
+      </div>
+
+      <div id="nutriMeals"></div>
+
+      <div class="nutri-summary">
+        <div class="nutri-summary-title" id="nutriSummaryTitle">Today's totals</div>
+        <div class="nutri-macros-grid">
+          <div class="nutri-macro-card">
+            <div class="nutri-macro-label">Calories</div>
+            <div><span class="nutri-macro-val" id="totalCals">0</span><span class="nutri-unit">kcal</span></div>
+            <div class="nutri-macro-bar"><div class="nutri-macro-fill c-cals" id="barCals" style="width:0%"></div></div>
+          </div>
+          <div class="nutri-macro-card">
+            <div class="nutri-macro-label">Protein</div>
+            <div><span class="nutri-macro-val" id="totalProtein">0</span><span class="nutri-unit">g</span></div>
+            <div class="nutri-macro-bar"><div class="nutri-macro-fill c-protein" id="barProtein" style="width:0%"></div></div>
+          </div>
+          <div class="nutri-macro-card">
+            <div class="nutri-macro-label">Carbs</div>
+            <div><span class="nutri-macro-val" id="totalCarbs">0</span><span class="nutri-unit">g</span></div>
+            <div class="nutri-macro-bar"><div class="nutri-macro-fill c-carbs" id="barCarbs" style="width:0%"></div></div>
+          </div>
+          <div class="nutri-macro-card">
+            <div class="nutri-macro-label">Fat</div>
+            <div><span class="nutri-macro-val" id="totalFat">0</span><span class="nutri-unit">g</span></div>
+            <div class="nutri-macro-bar"><div class="nutri-macro-fill c-fat" id="barFat" style="width:0%"></div></div>
+          </div>
+        </div>
+        <div class="nutri-secondary">
+          <div class="nutri-sec-item">
+            <div class="nutri-sec-label">Sugar</div>
+            <div class="nutri-sec-val" id="totalSugar">0<span class="nutri-unit">g</span></div>
+          </div>
+          <div class="nutri-sec-item">
+            <div class="nutri-sec-label">Fiber</div>
+            <div class="nutri-sec-val" id="totalFiber">0<span class="nutri-unit">g</span></div>
+          </div>
+          <div class="nutri-sec-item">
+            <div class="nutri-sec-label">Calcium</div>
+            <div class="nutri-sec-val" id="totalCalcium">0<span class="nutri-unit">mg</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="nutri-tips">
+        <div class="nutri-tips-title">Nutrition Insights</div>
+        <div id="nutriTips"><div class="nutri-tips-empty">Log some meals to get insights</div></div>
+      </div>
+    </div>
   </section>
 
   <div class="attribution">// editable template · all data stays in your browser</div>
@@ -1037,12 +1257,248 @@ main {
 })();
 </script>
 <script>
+(() => {
+  'use strict';
+
+  // ── Get free keys at developer.nutritionix.com ──
+  const NX_APP_ID  = 'YOUR_APP_ID';
+  const NX_APP_KEY = 'YOUR_APP_KEY';
+
+  const MEALS = [
+    { key: 'breakfast', icon: '🌅', label: 'Breakfast' },
+    { key: 'lunch',     icon: '🍽️', label: 'Lunch' },
+    { key: 'dinner',    icon: '🌙', label: 'Dinner' },
+    { key: 'snacks',    icon: '🍎', label: 'Snacks' },
+  ];
+
+  const DV = { cals: 2000, protein: 50, carbs: 275, fat: 78 };
+
+  let viewDate = todayStr();
+
+  function todayStr() {
+    const now = new Date();
+    if (now.getHours() < 6) now.setDate(now.getDate() - 1);
+    return now.toISOString().slice(0, 10);
+  }
+
+  function getLog(date) {
+    try {
+      return JSON.parse(localStorage.getItem('nutri:log:' + date))
+        || { breakfast: [], lunch: [], dinner: [], snacks: [] };
+    } catch { return { breakfast: [], lunch: [], dinner: [], snacks: [] }; }
+  }
+
+  function saveLog(date, log) {
+    localStorage.setItem('nutri:log:' + date, JSON.stringify(log));
+  }
+
+  async function fetchNutrition(query) {
+    const resp = await fetch('https://trackapi.nutritionix.com/v2/natural/nutrients', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-app-id': NX_APP_ID,
+        'x-app-key': NX_APP_KEY,
+      },
+      body: JSON.stringify({ query }),
+    });
+    if (!resp.ok) throw new Error('API ' + resp.status);
+    return (await resp.json()).foods || [];
+  }
+
+  function computeTotals(log) {
+    const t = { cals: 0, protein: 0, carbs: 0, fat: 0, sugar: 0, fiber: 0, calcium: 0, iron: 0 };
+    MEALS.forEach(m => {
+      (log[m.key] || []).forEach(f => {
+        t.cals    += f.calories || 0;
+        t.protein += f.protein  || 0;
+        t.carbs   += f.carbs    || 0;
+        t.fat     += f.fat      || 0;
+        t.sugar   += f.sugar    || 0;
+        t.fiber   += f.fiber    || 0;
+        t.calcium += f.calcium  || 0;
+        t.iron    += f.iron     || 0;
+      });
+    });
+    return t;
+  }
+
+  function foodCount(log) {
+    return MEALS.reduce((s, m) => s + (log[m.key] || []).length, 0);
+  }
+
+  function generateTips(t, n) {
+    if (n === 0) return [];
+    const tips = [];
+    if (t.cals < 800)              tips.push('Calorie intake looks very low — make sure all meals are logged');
+    if (t.protein < 40)            tips.push('Low protein — try chicken, eggs, Greek yogurt, or a protein shake');
+    if (t.sugar > 55)              tips.push('High sugar — swap juice and sweet snacks for whole fruit or water');
+    if (t.fiber < 14)              tips.push('Low fiber — add vegetables, oats, beans, or whole grain bread');
+    if (t.calcium < 350)           tips.push('Low calcium — drink some milk, eat yogurt, cheese, or leafy greens');
+    if (t.iron < 5)                tips.push('Low iron — try red meat, lentils, spinach, or fortified cereal');
+    if (t.fat < 18 && t.cals > 600) tips.push('Low healthy fats — add avocado, nuts, olive oil, or oily fish');
+    if (t.carbs > 350)             tips.push('High carbs — consider swapping refined carbs for vegetables or protein');
+    if (tips.length === 0)         tips.push('Great balance today — keep it up!');
+    return tips;
+  }
+
+  function fmt(n) { return Math.round(n); }
+  function barPct(v, dv) { return Math.min(100, Math.round(v / dv * 100)) + '%'; }
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, c =>
+      ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+  }
+
+  function renderAll() {
+    const log   = getLog(viewDate);
+    const today = todayStr();
+
+    const d = new Date(viewDate + 'T12:00:00');
+    const isToday = viewDate === today;
+    document.getElementById('nutriDateLabel').textContent = isToday
+      ? 'Today'
+      : d.toLocaleDateString('en-AU', { weekday: 'long', month: 'short', day: 'numeric' });
+    document.getElementById('nutriSummaryTitle').textContent = isToday ? "Today's totals" : d.toLocaleDateString('en-AU', { month: 'short', day: 'numeric' }) + ' totals';
+    document.getElementById('nutriNextDay').disabled = viewDate >= today;
+
+    const mealsEl = document.getElementById('nutriMeals');
+    mealsEl.innerHTML = '';
+    MEALS.forEach(meal => {
+      const foods    = log[meal.key] || [];
+      const mealCals = foods.reduce((s, f) => s + (f.calories || 0), 0);
+
+      const listHTML = foods.length === 0
+        ? '<div class="nutri-food-empty">Nothing logged yet</div>'
+        : foods.map((food, idx) => `
+            <div class="nutri-food-item">
+              <span class="nutri-food-name">${esc(food.name)}</span>
+              <span class="nutri-food-macros">${fmt(food.calories)} kcal · P ${fmt(food.protein)}g · C ${fmt(food.carbs)}g · F ${fmt(food.fat)}g</span>
+              <button class="nutri-food-del" data-meal="${meal.key}" data-idx="${idx}" aria-label="Remove">×</button>
+            </div>`).join('');
+
+      const card = document.createElement('div');
+      card.className = 'nutri-meal';
+      card.innerHTML = `
+        <div class="nutri-meal-header">
+          <span class="nutri-meal-icon">${meal.icon}</span>
+          <span class="nutri-meal-name">${meal.label}</span>
+          ${mealCals > 0 ? `<span class="nutri-meal-cals">${fmt(mealCals)} kcal</span>` : ''}
+        </div>
+        <div class="nutri-food-list">${listHTML}</div>
+        <div class="nutri-input-row">
+          <input class="nutri-input" type="text" placeholder="e.g. 2 eggs and toast" autocomplete="off" />
+          <button class="nutri-add-btn" data-meal="${meal.key}">+ Add</button>
+        </div>`;
+      mealsEl.appendChild(card);
+    });
+
+    const t = computeTotals(log);
+    document.getElementById('totalCals').textContent    = fmt(t.cals);
+    document.getElementById('totalProtein').textContent = fmt(t.protein);
+    document.getElementById('totalCarbs').textContent   = fmt(t.carbs);
+    document.getElementById('totalFat').textContent     = fmt(t.fat);
+    document.getElementById('totalSugar').innerHTML     = fmt(t.sugar) + '<span class="nutri-unit">g</span>';
+    document.getElementById('totalFiber').innerHTML     = fmt(t.fiber) + '<span class="nutri-unit">g</span>';
+    document.getElementById('totalCalcium').innerHTML   = fmt(t.calcium) + '<span class="nutri-unit">mg</span>';
+    document.getElementById('barCals').style.width      = barPct(t.cals,    DV.cals);
+    document.getElementById('barProtein').style.width   = barPct(t.protein, DV.protein);
+    document.getElementById('barCarbs').style.width     = barPct(t.carbs,   DV.carbs);
+    document.getElementById('barFat').style.width       = barPct(t.fat,     DV.fat);
+
+    const tips  = generateTips(t, foodCount(log));
+    const tipsEl = document.getElementById('nutriTips');
+    tipsEl.innerHTML = tips.length === 0
+      ? '<div class="nutri-tips-empty">Log some meals to get insights</div>'
+      : tips.map(tip => `<div class="nutri-tip">${esc(tip)}</div>`).join('');
+  }
+
+  async function addFood(mealKey, inputEl, btnEl) {
+    const query = inputEl.value.trim();
+    if (!query) return;
+    btnEl.disabled = true;
+    btnEl.textContent = '…';
+    try {
+      const foods = await fetchNutrition(query);
+      const log = getLog(viewDate);
+      foods.forEach(f => {
+        log[mealKey].push({
+          id: Math.random().toString(36).slice(2, 10),
+          name: f.food_name + (f.serving_qty && f.serving_qty !== 1 ? ` ×${f.serving_qty}` : ''),
+          calories: f.nf_calories             || 0,
+          protein:  f.nf_protein              || 0,
+          carbs:    f.nf_total_carbohydrate   || 0,
+          fat:      f.nf_total_fat            || 0,
+          sugar:    f.nf_sugars               || 0,
+          fiber:    f.nf_dietary_fiber        || 0,
+          calcium:  f.nf_calcium              || 0,
+          iron:     f.nf_iron                 || 0,
+        });
+      });
+      saveLog(viewDate, log);
+      inputEl.value = '';
+      renderAll();
+    } catch {
+      btnEl.textContent = 'Error';
+      setTimeout(() => { btnEl.textContent = '+ Add'; btnEl.disabled = false; }, 2000);
+      return;
+    }
+    btnEl.textContent = '+ Add';
+    btnEl.disabled = false;
+  }
+
+  function offsetDate(str, days) {
+    const d = new Date(str + 'T12:00:00');
+    d.setDate(d.getDate() + days);
+    return d.toISOString().slice(0, 10);
+  }
+
+  document.getElementById('nutriMeals').addEventListener('click', e => {
+    const del = e.target.closest('.nutri-food-del');
+    if (del) {
+      const log = getLog(viewDate);
+      log[del.dataset.meal].splice(parseInt(del.dataset.idx, 10), 1);
+      saveLog(viewDate, log);
+      renderAll();
+      return;
+    }
+    const btn = e.target.closest('.nutri-add-btn');
+    if (btn) {
+      const inp = btn.closest('.nutri-input-row').querySelector('.nutri-input');
+      addFood(btn.dataset.meal, inp, btn);
+    }
+  });
+
+  document.getElementById('nutriMeals').addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    const inp = e.target.closest('.nutri-input');
+    if (!inp) return;
+    const btn = inp.closest('.nutri-input-row').querySelector('.nutri-add-btn');
+    if (btn) addFood(btn.dataset.meal, inp, btn);
+  });
+
+  document.getElementById('nutriPrevDay').addEventListener('click', () => {
+    viewDate = offsetDate(viewDate, -1); renderAll();
+  });
+  document.getElementById('nutriNextDay').addEventListener('click', () => {
+    if (viewDate < todayStr()) { viewDate = offsetDate(viewDate, 1); renderAll(); }
+  });
+
+  if (NX_APP_ID === 'YOUR_APP_ID') {
+    document.getElementById('nutriSetup').style.display = '';
+  } else {
+    document.getElementById('nutriLog').style.display = '';
+    renderAll();
+  }
+})();
+</script>
+
+<script>
 document.addEventListener('DOMContentLoaded', function () {
   if (typeof initCloudSync !== 'function') return;
   initCloudSync({
     appKey: 'health',
     syncedKeys: ['stack:items', 'stack:version', 'stack:low', 'po_water_v1'],
-    syncedPrefixes: ['stack:taken:'],
+    syncedPrefixes: ['stack:taken:', 'nutri:log:'],
     onApplied: function () { window.dispatchEvent(new Event('storage')); }
   });
 });
