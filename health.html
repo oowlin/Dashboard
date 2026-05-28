@@ -88,16 +88,12 @@ main {
 .water-iframe {
   display: block;
   width: 100%;
-  height: 880px;
   border: 0;
   background: transparent;
-  border-radius: 16px;
-  overflow: hidden;
   color-scheme: dark;
 }
 @media (max-width: 480px) {
   .water-embed { margin-top: 40px; }
-  .water-iframe { height: 780px; }
 }
 
 .stack-card {
@@ -455,9 +451,8 @@ main {
   .stack-card { padding: 18px 16px 14px; }
   .stack-item { grid-template-columns: 28px 1fr auto; gap: 8px; }
   .stack-item .stack-low-btn { grid-column: 2 / 4; margin-top: 4px; justify-self: start; }
-  .stack-add-row { grid-template-columns: 1fr 1fr; }
-  .stack-add-row .stack-add-btn { grid-column: 1 / -1; }
-  .stack-add-row .stack-select { grid-column: 1 / -1; }
+  .stack-add-row { grid-template-columns: 1fr; }
+  .stack-add-row > * { min-width: 0; }
   .stack-search-results { width: 100%; }
 }
 
@@ -667,7 +662,7 @@ main {
 
   <section id="water" class="water-embed">
     <div class="section-title">Water Tracker</div>
-    <iframe src="po-water.html" class="water-iframe" loading="lazy" title="Water Tracker"></iframe>
+    <iframe id="waterFrame" src="po-water.html" class="water-iframe" scrolling="no" loading="lazy" title="Water Tracker"></iframe>
   </section>
 
   <section class="nutri-section" id="nutriSection">
@@ -1480,6 +1475,28 @@ main {
     document.getElementById('nutriLog').style.display = '';
     renderAll();
   }
+})();
+</script>
+
+<script>
+(function () {
+  var frame = document.getElementById('waterFrame');
+  if (!frame) return;
+  function sync() {
+    try {
+      var h = frame.contentDocument.documentElement.scrollHeight;
+      if (h > 100) frame.style.height = h + 'px';
+    } catch (e) {}
+  }
+  frame.addEventListener('load', function () {
+    sync();
+    try {
+      new MutationObserver(sync).observe(frame.contentDocument.body, {
+        childList: true, subtree: true, characterData: true, attributes: true
+      });
+    } catch (e) {}
+    setInterval(sync, 800);
+  });
 })();
 </script>
 
