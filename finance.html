@@ -1294,6 +1294,192 @@ html, body { scrollbar-width: none; -ms-overflow-style: none; }
 .ord-meta-pill.pct.frozen::after { content: ' · frozen'; opacity: 0.6; font-style: normal; }
 
 /* ============================================================
+   PAY DAY SECTION
+   ============================================================ */
+.pay-log-card {
+  background: linear-gradient(135deg, rgba(107,227,164,0.06), rgba(110,231,183,0.02)) !important;
+  border: 1px solid rgba(107,227,164,0.16) !important;
+}
+.pay-eyebrow {
+  font-size: 10px; letter-spacing: 0.18em; font-weight: 800;
+  text-transform: uppercase; color: var(--text-tertiary);
+  font-family: var(--font-mono); margin-bottom: 14px;
+}
+.pay-log-form { display: flex; flex-direction: column; gap: 10px; }
+.pay-amount-row { display: grid; grid-template-columns: 1fr 90px; gap: 8px; }
+.pay-input {
+  background: rgba(0,0,0,0.28); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px; color: var(--text-primary);
+  font-family: inherit; font-size: 15px; font-weight: 700;
+  padding: 12px 14px; outline: none;
+  font-variant-numeric: tabular-nums;
+  transition: border-color 0.2s; width: 100%;
+}
+.pay-input:focus { border-color: rgba(107,227,164,0.40); }
+.pay-input::placeholder { color: var(--text-tertiary); font-weight: 400; font-size: 14px; }
+.pay-select {
+  background: rgba(0,0,0,0.28); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px; color: var(--text-primary);
+  font-family: inherit; font-size: 13px; font-weight: 600;
+  padding: 12px 10px; outline: none; cursor: pointer;
+  appearance: none; -webkit-appearance: none; text-align: center; width: 100%;
+}
+.pay-type-row { display: flex; gap: 6px; }
+.pay-type-btn {
+  flex: 1; padding: 10px 0;
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px; color: var(--text-tertiary);
+  font-family: inherit; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.pay-type-btn.active {
+  background: rgba(107,227,164,0.12); border-color: rgba(107,227,164,0.35);
+  color: #6BE3A4;
+}
+.pay-log-btn {
+  width: 100%; padding: 14px;
+  background: linear-gradient(180deg, #6EE7B7, #4ED4A0);
+  color: #04201A; border: none; border-radius: 12px;
+  font-family: inherit; font-size: 15px; font-weight: 700;
+  cursor: pointer; letter-spacing: 0.02em;
+  box-shadow: 0 4px 18px rgba(110,231,183,0.28);
+  transition: transform 0.12s, box-shadow 0.18s; margin-top: 4px;
+}
+.pay-log-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 22px rgba(110,231,183,0.40); }
+.pay-log-btn:active { transform: scale(0.98); }
+.pay-log-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+.pay-log-status { font-size: 12px; color: var(--text-tertiary); text-align: center; min-height: 16px; transition: color 0.2s; }
+.pay-log-status.ok  { color: #6BE3A4; }
+.pay-log-status.err { color: #FF8A8A; }
+
+/* Budget breakdown */
+.pay-breakdown-wrap {
+  background: rgba(255,255,255,0.025); border-radius: 14px;
+  padding: 16px; margin-bottom: 10px;
+}
+.pay-breakdown-head {
+  display: flex; justify-content: space-between; align-items: baseline;
+  margin-bottom: 14px;
+  font-size: 10px; letter-spacing: 0.18em; font-weight: 800;
+  text-transform: uppercase; color: var(--text-tertiary); font-family: var(--font-mono);
+}
+.pay-breakdown-total {
+  font-size: 17px; font-weight: 700; color: #6BE3A4;
+  font-variant-numeric: tabular-nums; font-family: var(--font-mono); letter-spacing: -0.01em;
+}
+.pay-breakdown-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+}
+@media (max-width: 480px) { .pay-breakdown-grid { grid-template-columns: 1fr; } }
+.pay-bud-cell {
+  background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px; padding: 13px 14px;
+}
+.pay-bud-cell.is-remainder {
+  grid-column: 1 / -1;
+  background: rgba(107,227,164,0.05); border-color: rgba(107,227,164,0.14);
+}
+.pay-bud-label {
+  font-size: 10px; letter-spacing: 0.12em; font-weight: 800;
+  text-transform: uppercase; color: var(--text-tertiary); font-family: var(--font-mono);
+  margin-bottom: 6px; display: flex; align-items: center; gap: 6px;
+}
+.pay-bud-amt {
+  font-size: 21px; font-weight: 700; color: var(--text-primary);
+  font-variant-numeric: tabular-nums; font-family: var(--font-mono);
+  letter-spacing: -0.02em; line-height: 1; margin-bottom: 4px;
+}
+.pay-bud-sub { font-size: 10px; color: var(--text-tertiary); font-family: var(--font-mono); }
+.pay-bud-bar { height: 3px; background: rgba(255,255,255,0.06); border-radius: 2px; margin-top: 8px; overflow: hidden; }
+.pay-bud-bar-fill { height: 100%; border-radius: 2px; background: rgba(255,255,255,0.18); transition: width 0.3s; }
+
+/* Rules editor */
+.pay-rules-card {
+  background: rgba(255,255,255,0.025) !important;
+  border: 1px solid rgba(255,255,255,0.05) !important;
+}
+.pay-freq-row {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 16px;
+  font-size: 12px; color: var(--text-secondary); flex-wrap: wrap;
+}
+.pay-freq-label { flex-shrink: 0; }
+.pay-freq-select {
+  background: rgba(0,0,0,0.28); border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 8px; color: var(--text-primary);
+  font-family: inherit; font-size: 13px; padding: 6px 10px; cursor: pointer;
+}
+.pay-rule-row {
+  display: grid; grid-template-columns: 1fr auto auto; gap: 10px;
+  align-items: center; padding: 10px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.pay-rule-row:last-of-type { border-bottom: none; }
+.pay-rule-info { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.pay-rule-icon { font-size: 18px; flex-shrink: 0; line-height: 1; }
+.pay-rule-name { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+.pay-rule-sub { font-size: 10px; color: var(--text-tertiary); font-family: var(--font-mono); margin-top: 1px; }
+.pay-rule-pct-wrap { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+.pay-rule-pct-input {
+  width: 52px; text-align: right;
+  background: rgba(0,0,0,0.28); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px; color: var(--text-primary);
+  font-family: var(--font-mono); font-size: 13px; font-weight: 700;
+  padding: 5px 8px; outline: none; font-variant-numeric: tabular-nums;
+}
+.pay-rule-pct-input:focus { border-color: rgba(107,227,164,0.35); }
+.pay-rule-pct-unit { font-size: 11px; color: var(--text-tertiary); font-family: var(--font-mono); }
+.pay-rule-auto-tag {
+  display: inline-flex; align-items: center;
+  font-size: 9.5px; font-family: var(--font-mono); font-weight: 800;
+  letter-spacing: 0.10em; text-transform: uppercase;
+  color: #6BE3A4; background: rgba(107,227,164,0.10);
+  border: 1px solid rgba(107,227,164,0.20);
+  padding: 4px 8px; border-radius: 6px; white-space: nowrap;
+}
+.pay-rule-del {
+  background: transparent; border: none; color: var(--text-tertiary);
+  cursor: pointer; font-size: 16px; padding: 2px 6px; border-radius: 6px; line-height: 1;
+}
+.pay-rule-del:hover { color: #FF8A8A; background: rgba(255,138,138,0.10); }
+.pay-add-rule-row {
+  display: grid; grid-template-columns: 48px 1fr 60px auto; gap: 6px;
+  align-items: stretch; margin-top: 14px; padding-top: 14px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+@media (max-width: 480px) {
+  .pay-add-rule-row { grid-template-columns: 40px 1fr 54px auto; }
+}
+.pay-add-rule-icon-input {
+  background: rgba(0,0,0,0.28); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px; color: var(--text-primary); font-size: 18px;
+  padding: 7px; text-align: center; outline: none; width: 100%;
+}
+.pay-add-rule-name-input {
+  background: rgba(0,0,0,0.28); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px; color: var(--text-primary); font-family: inherit;
+  font-size: 13px; padding: 7px 10px; outline: none; width: 100%;
+}
+.pay-add-rule-name-input::placeholder { color: var(--text-tertiary); }
+.pay-add-rule-pct-input {
+  background: rgba(0,0,0,0.28); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px; color: var(--text-primary); font-family: var(--font-mono);
+  font-size: 13px; font-weight: 700; padding: 7px 8px;
+  text-align: right; outline: none; width: 100%;
+  font-variant-numeric: tabular-nums; -moz-appearance: textfield;
+}
+.pay-add-rule-pct-input::-webkit-outer-spin-button,
+.pay-add-rule-pct-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+.pay-add-rule-pct-input::placeholder { color: var(--text-tertiary); font-weight: 400; }
+.pay-add-rule-btn {
+  padding: 0 12px; border-radius: 8px;
+  background: rgba(255,255,255,0.06); border: none;
+  color: var(--text-secondary); font-family: inherit;
+  font-size: 18px; font-weight: 700; cursor: pointer; white-space: nowrap;
+}
+.pay-add-rule-btn:hover { background: rgba(255,255,255,0.12); color: var(--text-primary); }
+
+/* ============================================================
    SUBSCRIPTION ROW URGENT FLASH — fires when the renewal is
    ≤ 5 days away (including today / tomorrow / past).
    ============================================================ */
@@ -1864,6 +2050,67 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   </div>
 </div>
 
+<!-- ===== PAY DAY ===== -->
+<div class="section" data-section="payday">
+  <div class="section-title"><span class="section-title-text">PAY DAY</span></div>
+
+  <!-- Log payment -->
+  <div class="card pay-log-card">
+    <div class="pay-eyebrow">💰 Log Payment</div>
+    <div class="pay-log-form">
+      <div class="pay-amount-row">
+        <input type="number" id="payAmount" placeholder="Amount received" class="pay-input" inputmode="decimal" step="0.01" min="0" />
+        <select id="payCurrency" class="pay-select">
+          <option value="AUD">AUD</option>
+          <option value="USD">USD</option>
+          <option value="EUR">EUR</option>
+          <option value="GBP">GBP</option>
+        </select>
+      </div>
+      <select id="payAccount" class="pay-select" style="text-align:left;padding-left:14px">
+        <option value="">No bank accounts — add one in Net Worth</option>
+      </select>
+      <div class="pay-type-row">
+        <button class="pay-type-btn active" data-type="salary" type="button">💼 Salary</button>
+        <button class="pay-type-btn" data-type="interest" type="button">🏦 Interest</button>
+        <button class="pay-type-btn" data-type="other" type="button">💸 Other</button>
+      </div>
+      <input type="text" id="payNote" placeholder="Note (optional)" class="pay-input" style="font-size:14px;font-weight:400" />
+      <button type="button" id="payLogBtn" class="pay-log-btn">Log Payment</button>
+      <div class="pay-log-status" id="payLogStatus"></div>
+    </div>
+  </div>
+
+  <!-- Live budget breakdown (hidden until amount entered) -->
+  <div class="pay-breakdown-wrap" id="payBreakdownWrap" style="display:none">
+    <div class="pay-breakdown-head">
+      <span>Budget Breakdown</span>
+      <span class="pay-breakdown-total" id="payBreakdownTotal"></span>
+    </div>
+    <div class="pay-breakdown-grid" id="payBreakdownGrid"></div>
+  </div>
+
+  <!-- Budget rules editor -->
+  <div class="card pay-rules-card">
+    <div class="pay-eyebrow">⚙️ Budget Rules</div>
+    <div class="pay-freq-row">
+      <span class="pay-freq-label">Pay frequency</span>
+      <select id="payFreq" class="pay-freq-select">
+        <option value="weekly">Weekly</option>
+        <option value="fortnightly" selected>Fortnightly</option>
+        <option value="monthly">Monthly</option>
+      </select>
+    </div>
+    <div id="payRulesList"></div>
+    <div class="pay-add-rule-row">
+      <input type="text" id="payNewRuleIcon" class="pay-add-rule-icon-input" placeholder="🏷" maxlength="2" />
+      <input type="text" id="payNewRuleName" class="pay-add-rule-name-input" placeholder="e.g. Rent, Groceries…" />
+      <input type="number" id="payNewRulePct" class="pay-add-rule-pct-input" placeholder="%" min="0" max="100" step="1" />
+      <button type="button" id="payAddRuleBtn" class="pay-add-rule-btn">+</button>
+    </div>
+  </div>
+</div>
+
 </div>
 
 <!-- ===== BOTTOM TAB BAR ===== -->
@@ -1883,6 +2130,10 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   <button class="bot-tab" data-tab="wish">
     <span class="bot-tab-icon">🎯</span>
     <span class="bot-tab-label">Wishlist</span>
+  </button>
+  <button class="bot-tab" data-tab="payday">
+    <span class="bot-tab-icon">💰</span>
+    <span class="bot-tab-label">Pay Day</span>
   </button>
 </nav>
 
@@ -1933,7 +2184,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   }
   tabs.forEach(b => b.addEventListener('click', () => setActiveTab(b.dataset.tab)));
   const savedTab = storeGet(TAB_KEY);
-  setActiveTab(savedTab && ['net','subs','incoming','wish'].includes(savedTab) ? savedTab : 'net');
+  setActiveTab(savedTab && ['net','subs','incoming','wish','payday'].includes(savedTab) ? savedTab : 'net');
 
   // ============================================================
   // NET WORTH (copied from the main dashboard, verbatim logic)
@@ -3374,6 +3625,263 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   }
   safeRenderTicker();
   setInterval(safeRenderTicker, 1500);
+
+  // ============================================================
+  // PAY DAY — log income + smart budget breakdown
+  // ============================================================
+  const BUDGET_KEY = 'fin_budget_v1';
+  const DEFAULT_BUDGET_RULES = [
+    { key: 'bills',    icon: '🏠', label: 'Bills & Subs',    type: 'auto_subs' },
+    { key: 'savings',  icon: '💰', label: 'Savings',         type: 'pct', value: 20 },
+    { key: 'fuel',     icon: '⛽', label: 'Fuel',            type: 'pct', value: 8  },
+    { key: 'takeaway', icon: '🍔', label: 'Takeaway & Food', type: 'pct', value: 10 },
+  ];
+
+  function getBudgetState() {
+    const s = storeGet(BUDGET_KEY);
+    if (s && Array.isArray(s.rules)) return s;
+    return { payFreq: 'fortnightly', rules: JSON.parse(JSON.stringify(DEFAULT_BUDGET_RULES)) };
+  }
+  function saveBudgetState(s) { storeSet(BUDGET_KEY, s); }
+
+  // Monthly subscription total in native stored units (no exchange rate — used for ratios only)
+  function calcMonthlySubsTotal() {
+    const subs = storeGet('subs') || [];
+    let total = 0;
+    for (const s of subs) {
+      const amt = parseFloat(s.amount) || 0;
+      if (s.period === 'monthly') total += amt;
+      else if (s.period === 'yearly')  total += amt / 12;
+      else if (s.period === 'weekly')  total += amt * 4.33;
+    }
+    return total;
+  }
+
+  function billsPerPaycheck(payFreq) {
+    const monthly = calcMonthlySubsTotal();
+    if (payFreq === 'weekly')   return monthly / 4.33;
+    if (payFreq === 'monthly')  return monthly;
+    return monthly / 2.17; // fortnightly
+  }
+
+  function renderPayAccountSelect() {
+    const sel = document.getElementById('payAccount');
+    if (!sel) return;
+    const items = storeGet('nw:bank') || [];
+    sel.innerHTML = items.length
+      ? items.map((it, i) => '<option value="' + i + '">' + escapeHtml(it.name) + ' (' + fmtMoney(it.amount) + ')</option>').join('')
+      : '<option value="">No bank accounts — add one in Net Worth</option>';
+  }
+
+  function renderPayBreakdown() {
+    const wrap  = document.getElementById('payBreakdownWrap');
+    const grid  = document.getElementById('payBreakdownGrid');
+    const total = document.getElementById('payBreakdownTotal');
+    if (!wrap || !grid) return;
+    const amount = parseFloat(document.getElementById('payAmount').value) || 0;
+    if (amount <= 0) { wrap.style.display = 'none'; return; }
+    wrap.style.display = '';
+
+    const state = getBudgetState();
+    const ccy = (document.getElementById('payCurrency') || {}).value || 'AUD';
+    total.textContent = ccy + ' ' + amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    let allocated = 0;
+    const cells = [];
+    for (const rule of state.rules) {
+      let ruleAmt, subText;
+      if (rule.type === 'auto_subs') {
+        ruleAmt = billsPerPaycheck(state.payFreq);
+        const subsCount = (storeGet('subs') || []).length;
+        subText = 'auto · ' + subsCount + ' subscription' + (subsCount === 1 ? '' : 's');
+      } else {
+        ruleAmt = amount * (rule.value / 100);
+        subText = rule.value + '% of pay';
+      }
+      ruleAmt = Math.min(ruleAmt, amount); // cap at pay amount
+      allocated += ruleAmt;
+      const pct = amount > 0 ? (ruleAmt / amount * 100) : 0;
+      cells.push({ icon: rule.icon, label: rule.label, amt: ruleAmt, pct, subText });
+    }
+
+    const remainder = Math.max(0, amount - allocated);
+    const remPct    = amount > 0 ? (remainder / amount * 100) : 0;
+
+    const fmt = n => ccy + ' ' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    grid.innerHTML = cells.map(c => {
+      const w = Math.min(100, c.pct).toFixed(1);
+      return '<div class="pay-bud-cell">'
+        + '<div class="pay-bud-label"><span>' + c.icon + '</span> ' + escapeHtml(c.label) + '</div>'
+        + '<div class="pay-bud-amt">' + fmt(c.amt) + '</div>'
+        + '<div class="pay-bud-sub">' + escapeHtml(c.subText) + '</div>'
+        + '<div class="pay-bud-bar"><div class="pay-bud-bar-fill" style="width:' + w + '%"></div></div>'
+        + '</div>';
+    }).join('') + '<div class="pay-bud-cell is-remainder">'
+      + '<div class="pay-bud-label"><span>💸</span> Spending money</div>'
+      + '<div class="pay-bud-amt" style="color:#6BE3A4">' + fmt(remainder) + '</div>'
+      + '<div class="pay-bud-sub">' + remPct.toFixed(1) + '% · remainder after allocations</div>'
+      + '<div class="pay-bud-bar"><div class="pay-bud-bar-fill" style="width:' + Math.min(100, remPct).toFixed(1) + '%;background:#6BE3A4"></div></div>'
+      + '</div>';
+  }
+
+  function renderPayRules() {
+    const list    = document.getElementById('payRulesList');
+    const freqSel = document.getElementById('payFreq');
+    if (!list) return;
+    const state = getBudgetState();
+    if (freqSel) freqSel.value = state.payFreq || 'fortnightly';
+
+    list.innerHTML = '';
+    state.rules.forEach(function(rule, i) {
+      const isAuto = rule.type === 'auto_subs';
+      const monthlyBills = calcMonthlySubsTotal();
+      const row = document.createElement('div');
+      row.className = 'pay-rule-row';
+
+      const infoDiv = document.createElement('div');
+      infoDiv.className = 'pay-rule-info';
+      infoDiv.innerHTML = '<span class="pay-rule-icon">' + rule.icon + '</span>'
+        + '<div><div class="pay-rule-name">' + escapeHtml(rule.label) + '</div>'
+        + (isAuto ? '<div class="pay-rule-sub">AUD ' + monthlyBills.toLocaleString('en-US', {maximumFractionDigits:2}) + '/mo · auto from your subs</div>' : '')
+        + '</div>';
+      row.appendChild(infoDiv);
+
+      if (isAuto) {
+        const tag = document.createElement('span');
+        tag.className = 'pay-rule-auto-tag';
+        tag.textContent = 'AUTO';
+        row.appendChild(tag);
+        row.appendChild(document.createElement('span')); // placeholder for delete column
+      } else {
+        const wrap = document.createElement('div');
+        wrap.className = 'pay-rule-pct-wrap';
+        const inp = document.createElement('input');
+        inp.type = 'number'; inp.className = 'pay-rule-pct-input';
+        inp.value = rule.value; inp.min = 0; inp.max = 100; inp.step = 1;
+        inp.dataset.idx = i;
+        inp.addEventListener('input', function() {
+          const s = getBudgetState();
+          s.rules[i].value = parseFloat(inp.value) || 0;
+          saveBudgetState(s);
+          renderPayBreakdown();
+        });
+        const unit = document.createElement('span');
+        unit.className = 'pay-rule-pct-unit'; unit.textContent = '%';
+        wrap.appendChild(inp); wrap.appendChild(unit);
+        row.appendChild(wrap);
+
+        const del = document.createElement('button');
+        del.className = 'pay-rule-del'; del.textContent = '×'; del.type = 'button';
+        del.addEventListener('click', function() {
+          const s = getBudgetState();
+          s.rules.splice(i, 1);
+          saveBudgetState(s);
+          renderPayRules();
+          renderPayBreakdown();
+        });
+        row.appendChild(del);
+      }
+      list.appendChild(row);
+    });
+  }
+
+  function initPayDay() {
+    renderPayAccountSelect();
+    renderPayRules();
+
+    // Type selection
+    document.querySelectorAll('.pay-type-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.pay-type-btn').forEach(function(b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+      });
+    });
+
+    // Live breakdown on amount change
+    var amtEl = document.getElementById('payAmount');
+    if (amtEl) { amtEl.addEventListener('input', renderPayBreakdown); }
+
+    // Pay frequency
+    var freqSel = document.getElementById('payFreq');
+    if (freqSel) {
+      freqSel.addEventListener('change', function() {
+        var s = getBudgetState(); s.payFreq = freqSel.value;
+        saveBudgetState(s); renderPayRules(); renderPayBreakdown();
+      });
+    }
+
+    // Log payment
+    var logBtn  = document.getElementById('payLogBtn');
+    var statusEl = document.getElementById('payLogStatus');
+    if (logBtn) {
+      logBtn.addEventListener('click', function() {
+        var amount = parseFloat(document.getElementById('payAmount').value);
+        if (!amount || amount <= 0) {
+          statusEl.textContent = 'Enter a valid amount'; statusEl.className = 'pay-log-status err'; return;
+        }
+        var acctSel = document.getElementById('payAccount');
+        var acctIdx = parseInt(acctSel.value);
+        if (isNaN(acctIdx) || acctIdx < 0) {
+          statusEl.textContent = 'Add a bank account in Net Worth first'; statusEl.className = 'pay-log-status err'; return;
+        }
+        var items = storeGet('nw:bank') || [];
+        if (!items[acctIdx]) { statusEl.textContent = 'Account not found'; statusEl.className = 'pay-log-status err'; return; }
+
+        var ccy     = (document.getElementById('payCurrency') || {}).value || 'AUD';
+        var type    = (document.querySelector('.pay-type-btn.active') || {dataset:{type:'salary'}}).dataset.type;
+        var note    = (document.getElementById('payNote').value || '').trim();
+        var acctName = items[acctIdx].name;
+
+        // Convert amount to stored AUD base (use exchange rates if available)
+        var rate = exchangeRates && exchangeRates[ccy] ? exchangeRates[ccy] : 1;
+        var amountStored = amount / rate;
+
+        items[acctIdx].amount = (parseFloat(items[acctIdx].amount) || 0) + amountStored;
+        storeSet('nw:bank', items);
+        logActivity('bank', (note || type + ' · ' + ccy + ' ' + amount.toFixed(2)) + ' → ' + acctName, amountStored, 'add');
+        renderAllNetWorth();
+
+        // Reset
+        document.getElementById('payAmount').value = '';
+        document.getElementById('payNote').value = '';
+        document.getElementById('payBreakdownWrap').style.display = 'none';
+        renderPayAccountSelect();
+
+        var label = type === 'salary' ? 'Salary' : type === 'interest' ? 'Interest' : 'Payment';
+        var fmtAmt = ccy + ' ' + amount.toLocaleString('en-US', {minimumFractionDigits:2,maximumFractionDigits:2});
+        statusEl.textContent = '✓ ' + label + ' of ' + fmtAmt + ' added to ' + acctName;
+        statusEl.className = 'pay-log-status ok';
+        setTimeout(function() { statusEl.textContent = ''; statusEl.className = 'pay-log-status'; }, 5000);
+      });
+    }
+
+    // Add custom rule
+    var addRuleBtn = document.getElementById('payAddRuleBtn');
+    if (addRuleBtn) {
+      addRuleBtn.addEventListener('click', function() {
+        var icon  = (document.getElementById('payNewRuleIcon').value || '💸').trim() || '💸';
+        var label = (document.getElementById('payNewRuleName').value || '').trim();
+        var pct   = parseFloat(document.getElementById('payNewRulePct').value) || 5;
+        if (!label) { document.getElementById('payNewRuleName').focus(); return; }
+        var s = getBudgetState();
+        s.rules.push({ key: 'custom_' + Date.now(), icon: icon, label: label, type: 'pct', value: pct });
+        saveBudgetState(s);
+        document.getElementById('payNewRuleIcon').value = '';
+        document.getElementById('payNewRuleName').value = '';
+        document.getElementById('payNewRulePct').value  = '';
+        renderPayRules(); renderPayBreakdown();
+      });
+    }
+  }
+
+  initPayDay();
+
+  // Refresh account selector whenever net worth changes
+  var origRenderAllNW = renderAllNetWorth;
+  renderAllNetWorth = function() {
+    origRenderAllNW.apply(this, arguments);
+    renderPayAccountSelect();
+  };
 
 })();
 </script>
