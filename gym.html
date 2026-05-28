@@ -200,6 +200,22 @@ img, video, canvas, svg { max-width: 100%; }
    HEVY SECTION
    ============================================================ */
 .hevy-section { margin-bottom: 22px; }
+.hevy-setup-divider {
+  font-size: 11px; color: var(--text-4);
+  display: flex; align-items: center; gap: 10px;
+  margin: 18px 0 14px;
+}
+.hevy-setup-divider::before, .hevy-setup-divider::after {
+  content: ''; flex: 1; height: 1px; background: var(--border);
+}
+.hevy-csv-btn {
+  background: transparent; color: var(--text-2);
+  border: 1px solid var(--border-strong); border-radius: 999px;
+  padding: 8px 16px; font-family: inherit; font-size: 12px; font-weight: 700;
+  cursor: pointer; white-space: nowrap; flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent; transition: color .15s;
+}
+.hevy-csv-btn:hover { color: var(--text-1); }
 
 /* Setup card (no key yet) */
 .hevy-setup {
@@ -447,26 +463,31 @@ img, video, canvas, svg { max-width: 100%; }
     <div id="hevySetup">
       <div class="hevy-setup">
         <div class="hevy-setup-icon">🏋️</div>
-        <div class="hevy-setup-title">Connect Hevy</div>
-        <div class="hevy-setup-sub">Sync your Hevy workouts directly to this dashboard. Get your API key at <strong>hevy.com/settings</strong> → Developer tab (requires Hevy Pro).</div>
+        <div class="hevy-setup-title">Import Workouts</div>
+        <div class="hevy-setup-sub">In Hevy: <strong>Profile → Settings → Export Workout Data</strong> — then import the CSV here. Free, no account needed.</div>
+        <button class="btn-primary" id="hevyCsvImportBtn">Import Hevy CSV</button>
+        <div class="hevy-setup-divider">or sync live with API key (Hevy Pro only)</div>
         <input type="password" class="hevy-key-input" id="hevyKeyInput" placeholder="Paste your API key here…" autocomplete="off">
         <div class="hevy-key-hint">Stored locally on this device only.</div>
-        <button class="btn-primary" id="hevyConnectBtn">Connect Hevy</button>
+        <button class="btn-secondary" id="hevyConnectBtn" style="width:100%">Connect API</button>
       </div>
     </div>
 
-    <!-- Loaded (key present) -->
+    <!-- Loaded (key present or CSV imported) -->
     <div id="hevyLoaded" style="display:none">
       <div class="hevy-header">
         <div class="hevy-header-left">
           <div class="hevy-eyebrow">Hevy</div>
-          <div class="hevy-status" id="hevyStatus">Syncing…</div>
+          <div class="hevy-status" id="hevyStatus">Loading…</div>
         </div>
-        <button class="hevy-sync-btn" id="hevySyncBtn" type="button">Sync</button>
+        <button class="hevy-csv-btn" id="hevyCsvReimportBtn" type="button">Import CSV</button>
+        <button class="hevy-sync-btn" id="hevySyncBtn" type="button" style="display:none">Sync</button>
       </div>
       <div id="hevyWorkoutList"></div>
     </div>
   </div>
+
+  <input type="file" id="hevyCsvFile" accept=".csv" style="display:none">
 
 </div><!-- .shell -->
 
@@ -735,15 +756,90 @@ img, video, canvas, svg { max-width: 100%; }
     btn.disabled=false;btn.textContent='Sync';
   }
 
+  // ============================================================
+  // CSV IMPORT
+  // ============================================================
+  function parseCsvRow(line) {
+    const res=[]; let cur='', inQ=false;
+    for(let i=0;i<line.length;i++){
+      const c=line[i];
+      if(c==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++;}else inQ=!inQ;}
+      else if(c===','&&!inQ){res.push(cur);cur='';}
+      else cur+=c;
+    }
+    res.push(cur); return res;
+  }
+
+  function parseHevyCsv(text) {
+    const lines=text.split(/\r?\n/).filter(l=>l.trim());
+    if(lines.length<2) return [];
+    const hdr=parseCsvRow(lines[0]);
+    const ci={};hdr.forEach((h,i)=>ci[h.trim()]=i);
+    const need=['Title','Start Time','Exercise Title'];
+    if(need.some(k=>ci[k]==null)) throw new Error('Unrecognised CSV format — expected Hevy export columns');
+    const wkMap=new Map();
+    for(let i=1;i<lines.length;i++){
+      const r=parseCsvRow(lines[i]);
+      if(!r.length||!r[ci['Title']]) continue;
+      const title=r[ci['Title']]||'Workout';
+      const startRaw=r[ci['Start Time']]||'';
+      const endRaw=ci['End Time']!=null?r[ci['End Time']]||'':'';
+      const exTitle=r[ci['Exercise Title']]||'Exercise';
+      const wKg=parseFloat(r[ci['Weight (kg)']])||0;
+      const reps=parseInt(r[ci['Reps']])||0;
+      const dist=ci['Distance']!=null?parseFloat(r[ci['Distance']])||0:0;
+      const dur=ci['Duration']!=null?parseFloat(r[ci['Duration']])||0:0;
+      const wkKey=startRaw+'|'+title;
+      if(!wkMap.has(wkKey)){
+        const toISO=s=>{if(!s)return new Date().toISOString();try{return new Date(s.replace(' ','T')).toISOString();}catch{return new Date().toISOString();}};
+        wkMap.set(wkKey,{title,start_time:toISO(startRaw),end_time:toISO(endRaw),exercises:[]});
+      }
+      const wk=wkMap.get(wkKey);
+      let ex=wk.exercises.find(e=>e.title===exTitle);
+      if(!ex){ex={title:exTitle,sets:[]};wk.exercises.push(ex);}
+      ex.sets.push({weight_kg:wKg,reps,distance:dist,duration_seconds:dur,type:'normal'});
+    }
+    return Array.from(wkMap.values()).sort((a,b)=>new Date(b.start_time)-new Date(a.start_time));
+  }
+
+  function hevyHandleCsvFile(file) {
+    if(!file) return;
+    const stat=$('hevyStatus');
+    stat.textContent='Reading CSV…';
+    const r=new FileReader();
+    r.onload=()=>{
+      try{
+        const wks=parseHevyCsv(r.result);
+        if(!wks.length){stat.textContent='No workouts found in CSV.';return;}
+        localStorage.setItem(HEVY_CACHE,JSON.stringify(wks));
+        localStorage.setItem(HEVY_SYNC_LS,new Date().toISOString());
+        hevyInitUI();
+        stat.textContent='Imported '+wks.length+' workout'+(wks.length!==1?'s':'')+' from CSV';
+      }catch(e){
+        stat.textContent='Import failed — '+(e.message||'check the file');
+        alert('CSV import failed: '+(e.message||'unexpected format'));
+      }
+    };
+    r.readAsText(file);
+  }
+
   function hevyInitUI(){
     const key=hevyGetKey();
-    if(key){
+    const cache=localStorage.getItem(HEVY_CACHE);
+    const hasData=key||cache;
+    if(hasData){
       $('hevySetup').style.display='none';
       $('hevyLoaded').style.display='';
+      $('hevySyncBtn').style.display=key?'':'none';
+      $('hevyCsvReimportBtn').style.display='';
       const last=localStorage.getItem(HEVY_SYNC_LS);
-      $('hevyStatus').textContent=last?'Last synced '+hevyFmtDate(last):'Connecting…';
-      const c=localStorage.getItem(HEVY_CACHE);if(c){try{hevyRenderWorkouts(JSON.parse(c));}catch{}}
-      hevySync();
+      if(cache){try{hevyRenderWorkouts(JSON.parse(cache));}catch{}}
+      if(key){
+        $('hevyStatus').textContent=last?'Last synced '+hevyFmtDate(last):'Connecting…';
+        hevySync();
+      } else {
+        $('hevyStatus').textContent=last?'CSV imported '+hevyFmtDate(last):'CSV imported';
+      }
     }else{
       $('hevySetup').style.display='';
       $('hevyLoaded').style.display='none';
@@ -757,6 +853,9 @@ img, video, canvas, svg { max-width: 100%; }
     hevySaveKey(k);$('hevyKeyInput').value='';hevyInitUI();
   });
   $('hevyKeyInput').addEventListener('keydown',e=>{if(e.key==='Enter')$('hevyConnectBtn').click();});
+  $('hevyCsvImportBtn').addEventListener('click',()=>$('hevyCsvFile').click());
+  $('hevyCsvReimportBtn').addEventListener('click',()=>$('hevyCsvFile').click());
+  $('hevyCsvFile').addEventListener('change',e=>{hevyHandleCsvFile(e.target.files&&e.target.files[0]);e.target.value='';});
 
   // ============================================================
   // SETTINGS
