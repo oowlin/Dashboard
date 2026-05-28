@@ -127,7 +127,7 @@ body::after {
   pointer-events: none;
 }
 .bot-tab {
-  flex: 1; max-width: 140px;
+  flex: 1; min-width: 0; max-width: 140px;
   display: flex; flex-direction: column; align-items: center; gap: 2px;
   background: transparent;
   border: 1px solid transparent;
@@ -138,6 +138,19 @@ body::after {
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+@media (max-width: 600px) {
+  .bottom-tabs {
+    justify-content: stretch;
+    gap: 2px;
+    padding-left: max(6px, env(safe-area-inset-left));
+    padding-right: max(6px, env(safe-area-inset-right));
+  }
+  .bot-tab {
+    max-width: none;
+    padding: 9px 4px 8px;
+  }
+  .bot-tab-label { font-size: 9px; letter-spacing: 0.06em; }
 }
 .bot-tab:hover { color: var(--text-secondary); background: rgba(255,255,255,0.025); }
 .bot-tab.active {
