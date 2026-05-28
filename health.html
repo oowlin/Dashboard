@@ -610,6 +610,16 @@ main {
 
 /* ====== SLEEP TRACKER ====== */
 .sleep-section { margin-top: 32px; }
+.sleep-date-row { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+.sleep-date-label { font-family: var(--font-mono); font-size: 12px; color: var(--text-tertiary); flex: 1; }
+.sleep-date-nav {
+  background: transparent; border: 1px solid var(--border-strong);
+  color: var(--text-tertiary); font-size: 12px;
+  padding: 4px 10px; border-radius: 8px; cursor: pointer;
+  font-family: inherit; transition: all 0.15s;
+}
+.sleep-date-nav:hover { color: var(--text-primary); border-color: rgba(255,255,255,0.2); }
+.sleep-date-nav:disabled { opacity: 0.3; cursor: default; }
 .sleep-card {
   background: var(--bg-card); border-radius: 14px; padding: 20px;
   backdrop-filter: blur(24px) saturate(1.2);
@@ -776,6 +786,12 @@ main {
     <div class="section-title">Sleep Log</div>
 
     <div class="sleep-card">
+      <div class="sleep-date-row">
+        <span class="sleep-date-label" id="sleepDateLabel">Today</span>
+        <button class="sleep-date-nav" id="sleepPrevDay">‹ Prev</button>
+        <button class="sleep-date-nav" id="sleepNextDay" disabled>Next ›</button>
+      </div>
+
       <div id="sleepForm">
         <div class="sleep-form-row">
           <div class="sleep-field">
@@ -1679,7 +1695,34 @@ main {
     return (h % 12 || 12) + ':' + String(m).padStart(2, '0') + ' ' + ampm;
   }
 
+  let viewDate = todayStr();
   let selectedQuality = null;
+
+  function offsetDate(str, days) {
+    const d = new Date(str + 'T12:00:00');
+    d.setDate(d.getDate() + days);
+    return d.toISOString().slice(0, 10);
+  }
+
+  function updateDateUI() {
+    const isToday = viewDate === todayStr();
+    const labelEl = document.getElementById('sleepDateLabel');
+    labelEl.textContent = isToday
+      ? 'Today'
+      : new Date(viewDate + 'T12:00:00').toLocaleDateString('en-AU', { weekday: 'short', month: 'short', day: 'numeric' });
+    document.getElementById('sleepNextDay').disabled = isToday;
+  }
+
+  function renderForDate() {
+    updateDateUI();
+    selectedQuality = null;
+    document.querySelectorAll('.sleep-quality-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('sleepBed').value  = '23:00';
+    document.getElementById('sleepWake').value = '07:00';
+    document.getElementById('sleepLogBtn').textContent = viewDate === todayStr() ? 'Log Sleep' : 'Save Entry';
+    const entry = getLog(viewDate);
+    if (entry) showLogged(entry); else showForm(null);
+  }
 
   document.querySelectorAll('.sleep-quality-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -1715,6 +1758,8 @@ main {
     qualEl.style.color = q.color;
     document.getElementById('sleepLoggedTimes').textContent =
       fmtTime12(entry.bed) + ' → ' + fmtTime12(entry.wake);
+    document.getElementById('sleepEditBtn').textContent =
+      viewDate === todayStr() ? 'Edit tonight\'s log' : 'Edit this entry';
   }
 
   document.getElementById('sleepLogBtn').addEventListener('click', () => {
@@ -1729,13 +1774,22 @@ main {
       return;
     }
     const entry = { bed, wake, quality: selectedQuality };
-    saveLog(todayStr(), entry);
+    saveLog(viewDate, entry);
     showLogged(entry);
     renderChart();
   });
 
   document.getElementById('sleepEditBtn').addEventListener('click', () => {
-    showForm(getLog(todayStr()));
+    showForm(getLog(viewDate));
+  });
+
+  document.getElementById('sleepPrevDay').addEventListener('click', () => {
+    viewDate = offsetDate(viewDate, -1);
+    renderForDate();
+  });
+
+  document.getElementById('sleepNextDay').addEventListener('click', () => {
+    if (viewDate < todayStr()) { viewDate = offsetDate(viewDate, 1); renderForDate(); }
   });
 
   document.getElementById('sleepWeekToggle').addEventListener('click', () => {
@@ -1803,9 +1857,7 @@ main {
     ).join('');
   }
 
-  // Init
-  const todayEntry = getLog(todayStr());
-  if (todayEntry) showLogged(todayEntry);
+  renderForDate();
 
 })();
 </script>
