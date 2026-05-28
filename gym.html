@@ -774,30 +774,60 @@ img, video, canvas, svg { max-width: 100%; }
     const lines=text.split(/\r?\n/).filter(l=>l.trim());
     if(lines.length<2) return [];
     const hdr=parseCsvRow(lines[0]);
-    const ci={};hdr.forEach((h,i)=>ci[h.trim()]=i);
-    const need=['Title','Start Time','Exercise Title'];
-    if(need.some(k=>ci[k]==null)) throw new Error('Unrecognised CSV format — expected Hevy export columns');
+    const ci={};
+    hdr.forEach((h,i)=>ci[h.trim()]=i);
+
+    // Accept both Hevy's lowercase_underscore format and any old title-cased format
+    function col(...names){for(const n of names)if(ci[n]!=null)return ci[n];return null;}
+    const iTitle  = col('title','Title');
+    const iStart  = col('start_time','Start Time');
+    const iEnd    = col('end_time','End Time');
+    const iEx     = col('exercise_title','Exercise Title');
+    const iWeight = col('weight_kg','Weight (kg)');
+    const iReps   = col('reps','Reps');
+    const iType   = col('set_type','Set Type');
+    const iDist   = col('distance_km','distance','Distance');
+    const iDur    = col('duration_seconds','Duration');
+
+    if(iTitle==null||iStart==null||iEx==null)
+      throw new Error('Unrecognised format — make sure you exported from Hevy (Profile → Settings → Export Workout Data)');
+
+    // Parse "19 May 2026, 15:58" or ISO strings
+    const MONTHS={jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11};
+    function parseDate(s){
+      if(!s)return new Date().toISOString();
+      const m=String(s).match(/(\d{1,2})\s+([A-Za-z]+)\s+(\d{4}),?\s*(\d{1,2}):(\d{2})/);
+      if(m){
+        const mo=MONTHS[m[2].toLowerCase().slice(0,3)];
+        if(mo!=null) return new Date(+m[3],mo,+m[1],+m[4],+m[5]).toISOString();
+      }
+      try{const d=new Date(s.replace(' ','T'));if(!isNaN(d))return d.toISOString();}catch{}
+      return new Date().toISOString();
+    }
+
     const wkMap=new Map();
     for(let i=1;i<lines.length;i++){
       const r=parseCsvRow(lines[i]);
-      if(!r.length||!r[ci['Title']]) continue;
-      const title=r[ci['Title']]||'Workout';
-      const startRaw=r[ci['Start Time']]||'';
-      const endRaw=ci['End Time']!=null?r[ci['End Time']]||'':'';
-      const exTitle=r[ci['Exercise Title']]||'Exercise';
-      const wKg=parseFloat(r[ci['Weight (kg)']])||0;
-      const reps=parseInt(r[ci['Reps']])||0;
-      const dist=ci['Distance']!=null?parseFloat(r[ci['Distance']])||0:0;
-      const dur=ci['Duration']!=null?parseFloat(r[ci['Duration']])||0:0;
+      if(!r.length) continue;
+      const title=(r[iTitle]||'').trim()||'Workout';
+      const startRaw=r[iStart]||'';
+      if(!startRaw) continue;
+      const endRaw  =iEnd!=null   ?(r[iEnd]   ||''):'';
+      const exTitle =(r[iEx]      ||'Exercise').trim();
+      const wKg     =iWeight!=null?parseFloat(r[iWeight])||0:0;
+      const reps    =iReps  !=null?parseInt(r[iReps])   ||0:0;
+      const setType =(iType !=null?(r[iType]  ||'normal'):'normal').toLowerCase().trim();
+      const dist    =iDist  !=null?parseFloat(r[iDist]) ||0:0;
+      const dur     =iDur   !=null?parseFloat(r[iDur])  ||0:0;
+
       const wkKey=startRaw+'|'+title;
-      if(!wkMap.has(wkKey)){
-        const toISO=s=>{if(!s)return new Date().toISOString();try{return new Date(s.replace(' ','T')).toISOString();}catch{return new Date().toISOString();}};
-        wkMap.set(wkKey,{title,start_time:toISO(startRaw),end_time:toISO(endRaw),exercises:[]});
-      }
+      if(!wkMap.has(wkKey))
+        wkMap.set(wkKey,{title,start_time:parseDate(startRaw),end_time:parseDate(endRaw),exercises:[]});
+
       const wk=wkMap.get(wkKey);
       let ex=wk.exercises.find(e=>e.title===exTitle);
       if(!ex){ex={title:exTitle,sets:[]};wk.exercises.push(ex);}
-      ex.sets.push({weight_kg:wKg,reps,distance:dist,duration_seconds:dur,type:'normal'});
+      ex.sets.push({weight_kg:wKg,reps,distance_km:dist,duration_seconds:dur,type:setType});
     }
     return Array.from(wkMap.values()).sort((a,b)=>new Date(b.start_time)-new Date(a.start_time));
   }
