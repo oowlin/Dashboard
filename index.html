@@ -239,6 +239,55 @@ body::after {
   .day-ring-status { font-size: 13px; }
 }
 
+/* ===== Daily Section (Date + Ring + Verse + Quote) ===== */
+.daily-section { margin-bottom: 22px; }
+.daily-date {
+  font-size: 16px; font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+  margin-bottom: 12px;
+}
+.daily-card {
+  display: flex; align-items: center; gap: 24px;
+  padding: 22px; border-radius: 16px;
+  background: rgba(255,255,255,0.04);
+  backdrop-filter: blur(24px) saturate(1.2);
+  -webkit-backdrop-filter: blur(24px) saturate(1.2);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.45);
+}
+.daily-words {
+  flex: 1; min-width: 0;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.daily-verse {
+  border-left: 2px solid rgba(255,255,255,0.10);
+  padding-left: 14px;
+}
+.daily-verse-text {
+  font-size: 14px; font-style: italic;
+  color: var(--text-primary); line-height: 1.65;
+  margin-bottom: 6px;
+}
+.daily-verse-ref {
+  font-family: var(--font-mono); font-size: 10px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+.daily-divider { height: 1px; background: rgba(255,255,255,0.06); }
+.daily-quote-text {
+  font-size: 13px; color: var(--text-secondary);
+  line-height: 1.55; font-style: italic;
+}
+.daily-quote-author {
+  font-family: var(--font-mono); font-size: 10px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--text-tertiary); margin-top: 5px;
+}
+@media (max-width: 600px) {
+  .daily-card { flex-direction: column; align-items: center; gap: 20px; }
+  .daily-words { width: 100%; }
+}
+
 /* ===== Component 4: section + To Do List ===== */
 .section { margin-top: 8px; }
 .section-title {
@@ -681,31 +730,6 @@ body::after {
     </div>
   </div>
 
-  <div class="day-ring-wrap">
-    <div class="day-ring">
-      <svg viewBox="0 0 120 120">
-        <defs>
-          <filter id="dayRingGlow" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur stdDeviation="2.4" result="b" />
-            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-          </filter>
-        </defs>
-        <circle class="day-ring-track" cx="60" cy="60" r="52" />
-        <circle class="day-ring-fill"  cx="60" cy="60" r="52" id="dayRingFill" filter="url(#dayRingGlow)" />
-      </svg>
-      <div class="day-ring-overlay">
-        <div class="day-ring-percent" id="dayRingPercent">—</div>
-        <div class="day-ring-phase"   id="dayRingPhase">—</div>
-        <div class="day-ring-clock"   id="dayRingClock">—</div>
-      </div>
-    </div>
-    <div class="day-ring-text">
-      <div class="day-ring-status"    id="dayRingStatus">Loading…</div>
-      <div class="day-ring-remaining" id="dayRingRemaining">—</div>
-      <div class="day-ring-hours">8:00 AM – 12:00 AM</div>
-    </div>
-  </div>
-
   <div class="section">
     <div class="section-title">To Do List</div>
 
@@ -754,6 +778,40 @@ body::after {
         <button type="button" id="tomorrowAddBtn"    class="gm-add">+ Add</button>
         <button type="button" id="tomorrowPolishBtn" class="gm-polish">✨ Polish</button>
         <div class="gm-status" id="tomorrowStatus"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="daily-section">
+    <div class="daily-date" id="dailyDate">—</div>
+    <div class="daily-card">
+      <div class="day-ring">
+        <svg viewBox="0 0 120 120">
+          <defs>
+            <filter id="dayRingGlow" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur stdDeviation="2.4" result="b" />
+              <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+          <circle class="day-ring-track" cx="60" cy="60" r="52" />
+          <circle class="day-ring-fill" cx="60" cy="60" r="52" id="dayRingFill" filter="url(#dayRingGlow)" />
+        </svg>
+        <div class="day-ring-overlay">
+          <div class="day-ring-percent" id="dayRingPercent">—</div>
+          <div class="day-ring-phase"   id="dayRingPhase">—</div>
+          <div class="day-ring-clock"   id="dayRingClock">—</div>
+        </div>
+      </div>
+      <div class="daily-words">
+        <div class="daily-verse">
+          <div class="daily-verse-text" id="dailyVerseText">—</div>
+          <div class="daily-verse-ref"  id="dailyVerseRef">—</div>
+        </div>
+        <div class="daily-divider"></div>
+        <div>
+          <div class="daily-quote-text"   id="dailyQuoteText">—</div>
+          <div class="daily-quote-author" id="dailyQuoteAuthor">—</div>
+        </div>
       </div>
     </div>
   </div>
@@ -1370,6 +1428,100 @@ body::after {
     loadTomorrow
   );
 
+  // ---------- Daily verse & quote ----------
+  const BIBLE_VERSES = [
+    {text:"For God so loved the world that he gave his one and only Son, that whoever believes in him shall not perish but have eternal life.",ref:"John 3:16"},
+    {text:"I can do all this through him who gives me strength.",ref:"Philippians 4:13"},
+    {text:"For I know the plans I have for you, declares the Lord, plans to prosper you and not to harm you, plans to give you hope and a future.",ref:"Jeremiah 29:11"},
+    {text:"And we know that in all things God works for the good of those who love him, who have been called according to his purpose.",ref:"Romans 8:28"},
+    {text:"The Lord is my shepherd, I lack nothing.",ref:"Psalm 23:1"},
+    {text:"But those who hope in the Lord will renew their strength. They will soar on wings like eagles; they will run and not grow weary, they will walk and not be faint.",ref:"Isaiah 40:31"},
+    {text:"But seek first his kingdom and his righteousness, and all these things will be given to you as well.",ref:"Matthew 6:33"},
+    {text:"Trust in the Lord with all your heart and lean not on your own understanding.",ref:"Proverbs 3:5"},
+    {text:"Be strong and courageous. Do not be afraid; do not be discouraged, for the Lord your God will be with you wherever you go.",ref:"Joshua 1:9"},
+    {text:"The Lord is my light and my salvation — whom shall I fear? The Lord is the stronghold of my life — of whom shall I be afraid?",ref:"Psalm 27:1"},
+    {text:"Do not be anxious about anything, but in every situation, by prayer and petition, with thanksgiving, present your requests to God.",ref:"Philippians 4:6"},
+    {text:"Come to me, all you who are weary and burdened, and I will give you rest.",ref:"Matthew 11:28"},
+    {text:"The Lord bless you and keep you; the Lord make his face shine on you and be gracious to you.",ref:"Numbers 6:24-25"},
+    {text:"Even though I walk through the darkest valley, I will fear no evil, for you are with me.",ref:"Psalm 23:4"},
+    {text:"For the Spirit God gave us does not make us timid, but gives us power, love and self-discipline.",ref:"2 Timothy 1:7"},
+    {text:"And the peace of God, which transcends all understanding, will guard your hearts and your minds in Christ Jesus.",ref:"Philippians 4:7"},
+    {text:"Now faith is confidence in what we hope for and assurance about what we do not see.",ref:"Hebrews 11:1"},
+    {text:"So do not fear, for I am with you; do not be dismayed, for I am your God. I will strengthen you and help you.",ref:"Isaiah 41:10"},
+    {text:"In the same way, let your light shine before others, that they may see your good deeds and glorify your Father in heaven.",ref:"Matthew 5:16"},
+    {text:"Cast all your anxiety on him because he cares for you.",ref:"1 Peter 5:7"},
+    {text:"But the fruit of the Spirit is love, joy, peace, forbearance, kindness, goodness, faithfulness, gentleness and self-control.",ref:"Galatians 5:22-23"},
+    {text:"Love is patient, love is kind. It does not envy, it does not boast, it is not proud.",ref:"1 Corinthians 13:4"},
+    {text:"For we live by faith, not by sight.",ref:"2 Corinthians 5:7"},
+    {text:"Whatever you do, work at it with all your heart, as working for the Lord, not for human masters.",ref:"Colossians 3:23"},
+    {text:"Finally, be strong in the Lord and in his mighty power.",ref:"Ephesians 6:10"},
+    {text:"Delight yourself in the Lord, and he will give you the desires of your heart.",ref:"Psalm 37:4"},
+    {text:"Your word is a lamp for my feet, a light on my path.",ref:"Psalm 119:105"},
+    {text:"For nothing will be impossible with God.",ref:"Luke 1:37"},
+    {text:"Commit to the Lord whatever you do, and he will establish your plans.",ref:"Proverbs 16:3"},
+    {text:"Wait for the Lord; be strong and take heart and wait for the Lord.",ref:"Psalm 27:14"},
+    {text:"Therefore, if anyone is in Christ, the new creation has come: The old has gone, the new is here!",ref:"2 Corinthians 5:17"},
+    {text:"Do not conform to the pattern of this world, but be transformed by the renewing of your mind.",ref:"Romans 12:2"},
+    {text:"The steadfast love of the Lord never ceases; his mercies never come to an end; they are new every morning.",ref:"Lamentations 3:22-23"},
+    {text:"Have I not commanded you? Be strong and courageous. Do not be afraid; do not be discouraged.",ref:"Joshua 1:9"},
+    {text:"He gives strength to the weary and increases the power of the weak.",ref:"Isaiah 40:29"},
+  ];
+  const MOTIVATIONAL_QUOTES = [
+    {text:"You have power over your mind — not outside events. Realize this, and you will find strength.",author:"Marcus Aurelius"},
+    {text:"Success is not final, failure is not fatal: it is the courage to continue that counts.",author:"Winston Churchill"},
+    {text:"We are what we repeatedly do. Excellence, then, is not an act, but a habit.",author:"Aristotle"},
+    {text:"In the middle of every difficulty lies opportunity.",author:"Albert Einstein"},
+    {text:"It does not matter how slowly you go as long as you do not stop.",author:"Confucius"},
+    {text:"The secret of getting ahead is getting started.",author:"Mark Twain"},
+    {text:"Act as if what you do makes a difference. It does.",author:"William James"},
+    {text:"Believe you can and you're halfway there.",author:"Theodore Roosevelt"},
+    {text:"Discipline is the bridge between goals and accomplishment.",author:"Jim Rohn"},
+    {text:"The mind is everything. What you think you become.",author:"Buddha"},
+    {text:"An unexamined life is not worth living.",author:"Socrates"},
+    {text:"Do what you can, with what you have, where you are.",author:"Theodore Roosevelt"},
+    {text:"The only way to do great work is to love what you do.",author:"Steve Jobs"},
+    {text:"Whether you think you can or you think you can't — you're right.",author:"Henry Ford"},
+    {text:"Hardships often prepare ordinary people for an extraordinary destiny.",author:"C.S. Lewis"},
+    {text:"You miss 100% of the shots you don't take.",author:"Wayne Gretzky"},
+    {text:"It always seems impossible until it's done.",author:"Nelson Mandela"},
+    {text:"Don't count the days; make the days count.",author:"Muhammad Ali"},
+    {text:"Energy and persistence conquer all things.",author:"Benjamin Franklin"},
+    {text:"Go confidently in the direction of your dreams.",author:"Henry David Thoreau"},
+    {text:"The future belongs to those who believe in the beauty of their dreams.",author:"Eleanor Roosevelt"},
+    {text:"What lies within us is far greater than what lies behind or before us.",author:"Ralph Waldo Emerson"},
+    {text:"Either you run the day, or the day runs you.",author:"Jim Rohn"},
+    {text:"Hard work beats talent when talent doesn't work hard.",author:"Tim Notke"},
+    {text:"Your time is limited, so don't waste it living someone else's life.",author:"Steve Jobs"},
+    {text:"The way to get started is to quit talking and begin doing.",author:"Walt Disney"},
+    {text:"Don't watch the clock; do what it does. Keep going.",author:"Sam Levenson"},
+    {text:"The harder the conflict, the more glorious the triumph.",author:"Thomas Paine"},
+    {text:"Arise, awake, and stop not until the goal is reached.",author:"Swami Vivekananda"},
+    {text:"The difference between ordinary and extraordinary is that little extra.",author:"Jimmy Johnson"},
+    {text:"Waste no more time arguing what a good man should be. Be one.",author:"Marcus Aurelius"},
+    {text:"Life is what happens when you're busy making other plans.",author:"John Lennon"},
+    {text:"The best time to plant a tree was 20 years ago. The second best time is now.",author:"Chinese Proverb"},
+    {text:"Great things never came from comfort zones.",author:"Neil Strauss"},
+    {text:"You don't have to be great to start, but you have to start to be great.",author:"Zig Ziglar"},
+  ];
+
+  function dailyPick(arr) {
+    const d = new Date();
+    const dayNum = Math.floor((d - new Date(d.getFullYear(), 0, 0)) / 86400000);
+    return arr[dayNum % arr.length];
+  }
+  function initDailySection() {
+    const d = new Date();
+    const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    document.getElementById('dailyDate').textContent = days[d.getDay()] + ', ' + months[d.getMonth()] + ' ' + d.getDate();
+    const v = dailyPick(BIBLE_VERSES);
+    document.getElementById('dailyVerseText').textContent = '“' + v.text + '”';
+    document.getElementById('dailyVerseRef').textContent = v.ref;
+    const q = dailyPick(MOTIVATIONAL_QUOTES);
+    document.getElementById('dailyQuoteText').textContent = '“' + q.text + '”';
+    document.getElementById('dailyQuoteAuthor').textContent = '— ' + q.author;
+  }
+
   // ---------- Boot ----------
   rollover();
   processStreak();
@@ -1379,6 +1531,7 @@ body::after {
   updateDayRing();
   setInterval(updateDayRing, 60 * 1000);
   startTicker();
+  initDailySection();
 
   // Re-render when storage changes from another tab (or our bridged parent).
   window.addEventListener('storage', () => {
