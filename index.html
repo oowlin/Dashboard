@@ -8,6 +8,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="sync.js" defer></script>
 <script src="topbar.js" defer></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
 :root {
   --text-primary: #FAFAFA;
@@ -593,6 +594,72 @@ body::after {
   .gm-card { padding: 16px; }
   .gm-progress-num { font-size: 36px; }
 }
+
+/* ---- Upcoming / Calendar ---- */
+.cal-connect {
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  padding: 28px 20px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 16px; text-align: center;
+}
+.cal-connect-sub { font-size: 12px; color: var(--text-tertiary); font-family: var(--font-mono); }
+.cal-signin-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 18px;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 10px; color: var(--text-primary);
+  font-family: var(--font); font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.cal-signin-btn:hover { background: rgba(255,255,255,0.11); }
+.cal-setup-note {
+  font-size: 12px; color: var(--text-tertiary); font-family: var(--font-mono);
+  text-align: center; padding: 24px 16px; line-height: 1.7;
+  border: 1px solid rgba(255,255,255,0.07); border-radius: 14px;
+}
+.cal-day-group { margin-bottom: 16px; }
+.cal-day-label {
+  font-family: var(--font-mono); font-size: 10px; font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--text-tertiary); margin-bottom: 8px;
+  display: flex; align-items: center; gap: 7px;
+}
+.cal-day-badge {
+  font-size: 9px; font-weight: 800; letter-spacing: 0.06em;
+  padding: 2px 6px; border-radius: 4px;
+}
+.cal-day-badge.today { background: rgba(107,227,164,0.18); color: var(--success); }
+.cal-day-badge.tmr   { background: rgba(242,192,99,0.18);  color: var(--warning); }
+.cal-event {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 10px 13px; margin-bottom: 6px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 11px;
+}
+.cal-event-dot {
+  width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
+  margin-top: 5px; background: rgba(255,255,255,0.22);
+}
+.cal-event-dot.c-exam   { background: #ff6b6b; }
+.cal-event-dot.c-social { background: #f472b6; }
+.cal-event-dot.c-health { background: #7dd3fc; }
+.cal-event-dot.c-task   { background: #fbbf24; }
+.cal-event-title { font-size: 13px; font-weight: 600; color: var(--text-primary); line-height: 1.3; }
+.cal-event-time {
+  font-family: var(--font-mono); font-size: 11px; color: var(--text-tertiary); margin-top: 2px;
+}
+.cal-footer { display: flex; justify-content: flex-end; margin-top: 4px; }
+.cal-refresh-btn {
+  font-family: var(--font-mono); font-size: 10px; font-weight: 600;
+  letter-spacing: 0.06em; color: var(--text-tertiary);
+  background: none; border: none; cursor: pointer; padding: 4px 0;
+  -webkit-tap-highlight-color: transparent;
+}
+.cal-refresh-btn:hover { color: var(--text-secondary); }
 </style>
 </head>
 <body>
@@ -689,6 +756,18 @@ body::after {
         <div class="gm-status" id="tomorrowStatus"></div>
       </div>
     </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Upcoming</div>
+    <div id="calSetup" class="cal-setup-note" style="display:none">
+      Paste your Google OAuth Client ID into <code>CAL_CLIENT_ID</code> in index.html to enable live calendar sync.
+    </div>
+    <div id="calConnect" class="cal-connect" style="display:none">
+      <div class="cal-connect-sub">Sign in once · token cached for ~1 hour</div>
+      <button class="cal-signin-btn" id="calSignIn" type="button">🗓 Connect Google Calendar</button>
+    </div>
+    <div id="calEventsWrap"></div>
   </div>
 
 </div>
@@ -1319,6 +1398,186 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 });
+</script>
+<script>
+// ---- Google Calendar widget ----
+(function () {
+  // 1. Go to https://console.cloud.google.com → APIs & Services → Credentials
+  // 2. Create an OAuth 2.0 Client ID → Web application
+  // 3. Add your Vercel URL (and http://localhost) as Authorized JavaScript Origins
+  // 4. Enable the Google Calendar API in the same project
+  // 5. Paste the Client ID below
+  const CAL_CLIENT_ID = '';
+
+  const SCOPES       = 'https://www.googleapis.com/auth/calendar.readonly';
+  const TOKEN_KEY    = 'cal_token_v1';
+  const CACHE_KEY    = 'cal_cache_v1';
+  const CACHE_TTL_MS = 30 * 60 * 1000;
+
+  const setupEl    = document.getElementById('calSetup');
+  const connectEl  = document.getElementById('calConnect');
+  const signInBtn  = document.getElementById('calSignIn');
+  const eventsWrap = document.getElementById('calEventsWrap');
+  let tokenClient  = null;
+
+  function show(el) { el.style.display = ''; }
+  function hide(el) { el.style.display = 'none'; }
+
+  function dayKey(d) {
+    return d.getFullYear() + '-' +
+      String(d.getMonth() + 1).padStart(2, '0') + '-' +
+      String(d.getDate()).padStart(2, '0');
+  }
+  function loadToken() {
+    try {
+      const t = JSON.parse(localStorage.getItem(TOKEN_KEY));
+      if (t && t.token && t.expiry > Date.now()) return t.token;
+    } catch (e) {}
+    return null;
+  }
+  function saveToken(token, expiresIn) {
+    try {
+      localStorage.setItem(TOKEN_KEY, JSON.stringify({
+        token, expiry: Date.now() + (expiresIn - 60) * 1000
+      }));
+    } catch (e) {}
+  }
+  function loadCache() {
+    try {
+      const c = JSON.parse(localStorage.getItem(CACHE_KEY));
+      if (c && c.events && c.at > Date.now() - CACHE_TTL_MS) return c.events;
+    } catch (e) {}
+    return null;
+  }
+  function saveCache(events) {
+    try { localStorage.setItem(CACHE_KEY, JSON.stringify({ events, at: Date.now() })); } catch (e) {}
+  }
+
+  function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+  function fmtDate(d) {
+    const D = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const M = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return D[d.getDay()] + ' ' + d.getDate() + ' ' + M[d.getMonth()];
+  }
+  function fmtTime(d) {
+    let h = d.getHours(), m = d.getMinutes();
+    const a = h >= 12 ? 'PM' : 'AM';
+    h = h % 12 || 12;
+    return h + (m ? ':' + String(m).padStart(2, '0') : '') + ' ' + a;
+  }
+  function dotClass(ev) {
+    const t = (ev.summary || '').toUpperCase();
+    const c = String(ev.colorId || '');
+    if (t.includes('EXAM')) return 'c-exam';
+    if (t.includes('BIRTHDAY') || c === '2') return 'c-social';
+    if (t.includes('PHYSIO') || t.includes('APPT') || t.includes('DOCTOR')) return 'c-health';
+    if (t.includes('TIMESHEET') || c === '6') return 'c-task';
+    return '';
+  }
+
+  function render(events) {
+    const todayStr = dayKey(new Date());
+    const tmrStr   = dayKey(new Date(Date.now() + 86400000));
+
+    const map = new Map();
+    for (const ev of events) {
+      const allDay = !ev.start.dateTime;
+      const start  = allDay ? new Date(ev.start.date + 'T00:00:00') : new Date(ev.start.dateTime);
+      const dk     = allDay ? ev.start.date.slice(0, 10) : dayKey(start);
+      if (!map.has(dk)) map.set(dk, { date: start, evs: [] });
+      map.get(dk).evs.push({ ev, start, allDay });
+    }
+
+    let html = '';
+    for (const [dk, { date, evs }] of map) {
+      const badge = dk === todayStr
+        ? '<span class="cal-day-badge today">Today</span>'
+        : dk === tmrStr
+          ? '<span class="cal-day-badge tmr">Tmr</span>'
+          : '';
+      html += '<div class="cal-day-group"><div class="cal-day-label">' + fmtDate(date) + badge + '</div>';
+      for (const { ev, start, allDay } of evs) {
+        html +=
+          '<div class="cal-event">' +
+            '<div class="cal-event-dot ' + dotClass(ev) + '"></div>' +
+            '<div>' +
+              '<div class="cal-event-title">' + escHtml(ev.summary || '(no title)') + '</div>' +
+              '<div class="cal-event-time">' + (allDay ? 'All day' : fmtTime(start)) + '</div>' +
+            '</div>' +
+          '</div>';
+      }
+      html += '</div>';
+    }
+
+    if (!html) html = '<p style="color:var(--text-tertiary);font-size:13px;padding:8px 2px">No events in the next 14 days.</p>';
+    html += '<div class="cal-footer"><button class="cal-refresh-btn" id="calRefresh" type="button">↻ refresh</button></div>';
+
+    hide(setupEl); hide(connectEl);
+    eventsWrap.innerHTML = html;
+    document.getElementById('calRefresh').addEventListener('click', () => {
+      const tok = loadToken();
+      if (tok) { fetchEvents(tok, true); }
+      else { eventsWrap.innerHTML = ''; show(connectEl); }
+    });
+  }
+
+  async function fetchEvents(token, force) {
+    if (!force) { const cached = loadCache(); if (cached) { render(cached); return; } }
+    try {
+      const now = new Date();
+      const end = new Date(now.getTime() + 14 * 86400000);
+      const p = new URLSearchParams({
+        timeMin: now.toISOString(), timeMax: end.toISOString(),
+        singleEvents: 'true', orderBy: 'startTime', maxResults: '25'
+      });
+      const res = await fetch(
+        'https://www.googleapis.com/calendar/v3/calendars/primary/events?' + p,
+        { headers: { Authorization: 'Bearer ' + token } }
+      );
+      if (res.status === 401) { show(connectEl); return; }
+      const data = await res.json();
+      const evs = (data.items || []).filter(e => e.status !== 'cancelled');
+      saveCache(evs);
+      render(evs);
+    } catch (e) {
+      const c = loadCache();
+      if (c) render(c);
+      else { eventsWrap.innerHTML = ''; show(connectEl); }
+    }
+  }
+
+  function initGIS() {
+    tokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: CAL_CLIENT_ID,
+      scope: SCOPES,
+      callback(resp) {
+        if (resp.error) { show(connectEl); return; }
+        saveToken(resp.access_token, resp.expires_in);
+        fetchEvents(resp.access_token, false);
+      }
+    });
+    signInBtn.addEventListener('click', () => tokenClient.requestAccessToken());
+    const token = loadToken();
+    if (token) fetchEvents(token, false);
+    else show(connectEl);
+  }
+
+  function boot() {
+    if (!CAL_CLIENT_ID) { show(setupEl); return; }
+    if (window.google && window.google.accounts) { initGIS(); return; }
+    let tries = 0;
+    const t = setInterval(() => {
+      if (window.google && window.google.accounts) { clearInterval(t); initGIS(); }
+      else if (++tries > 25) { clearInterval(t); show(connectEl); }
+    }, 200);
+  }
+
+  document.readyState === 'loading'
+    ? document.addEventListener('DOMContentLoaded', boot)
+    : boot();
+})();
 </script>
 </body>
 </html>
