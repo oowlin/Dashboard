@@ -1276,15 +1276,18 @@ body::after {
   }
 
   function renderListInto(goals, listEl, emptyEl, key, readOnly) {
+    const existingToggle = listEl.querySelector('.gm-show-toggle');
+    const wasExpanded = existingToggle ? existingToggle.textContent.startsWith('Show less') : false;
+
     listEl.innerHTML = '';
     emptyEl.style.display = goals.length === 0 ? 'block' : 'none';
     const reload = () => (key === todayKey() ? loadToday() : loadTomorrow());
 
-    const visible = goals.length > 5 ? goals.slice(0, 5) : goals;
+    const visible = (goals.length > 5 && !wasExpanded) ? goals.slice(0, 5) : goals;
     visible.forEach((g, i) => listEl.appendChild(buildGoalRow(g, i, key, readOnly, reload)));
 
     if (goals.length > 5) {
-      let expanded = false;
+      let expanded = wasExpanded;
       const toggle = document.createElement('button');
       toggle.type = 'button';
       toggle.className = 'gm-show-toggle';
