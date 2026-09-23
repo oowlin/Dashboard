@@ -1,47 +1,15 @@
 // =============================================================
-// Persistent dashboard bottom tab bar.
-// Drop this on any page with:
+// Shared page chrome helper. Drop this on any page with:
 //     <script src="topbar.js" defer></script>
-// It self-injects CSS + HTML for the Main bottom tab.
+// It self-injects shared CSS (modal/scrollbar rules) and locks
+// down pinch/double-tap gestures and body scroll while modals
+// are open.
 // =============================================================
 (function () {
   'use strict';
 
   // -------- CSS --------
   const css = `
-.bottombar {
-  position: fixed; bottom: 0; left: 0; right: 0; z-index: 40;
-  display: flex; justify-content: space-around; align-items: stretch;
-  padding: 6px 0 calc(6px + env(safe-area-inset-bottom));
-  background: #0a0a0b;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
-}
-.bottombar-tab {
-  flex: 1;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 3px; padding: 6px 0 4px; text-decoration: none;
-  color: rgba(255, 255, 255, 0.45);
-  font-size: 10px; font-weight: 600; letter-spacing: 0.04em;
-  -webkit-tap-highlight-color: transparent; transition: color 0.15s;
-}
-.bottombar-tab-icon {
-  font-size: 24px; line-height: 1;
-  filter: grayscale(100%) brightness(1.2); opacity: 0.55;
-  transition: opacity 0.15s, filter 0.15s, transform 0.10s;
-}
-.bottombar-tab.active { color: #FAFAFA; }
-.bottombar-tab.active .bottombar-tab-icon {
-  filter: grayscale(100%) brightness(1.6); opacity: 1;
-}
-.bottombar-tab:active .bottombar-tab-icon { transform: scale(0.92); }
-body.has-bottombar {
-  padding-bottom: calc(72px + env(safe-area-inset-bottom)) !important;
-}
-@media (max-width: 480px) {
-  .bottombar-tab-icon { font-size: 22px; }
-  .bottombar-tab { font-size: 10px; gap: 2px; }
-}
 html, body { -webkit-text-size-adjust: 100%; }
 @media (max-width: 768px) {
   html { touch-action: pan-y; }
@@ -69,36 +37,12 @@ body.topbar-modal-open { overflow: hidden; touch-action: none; }
 }
 `;
 
-  const bottombarHtml = `
-<nav class="bottombar" id="bottombar" role="navigation" aria-label="Main tabs">
-  <a href="index.html" class="bottombar-tab" data-page="main">
-    <span class="bottombar-tab-icon">🏠</span><span>Main</span>
-  </a>
-</nav>`;
-
-  function isEmbedded() {
-    try { return window.self !== window.top; } catch (e) { return true; }
-  }
-  function shouldShowChrome() { return !isEmbedded(); }
-  function currentPageKey() {
-    return 'main';
-  }
-
-  function injectStyleAndHTML() {
-    if (document.getElementById('bottombar')) return;
-    if (!shouldShowChrome()) return;
+  function injectStyle() {
+    if (document.getElementById('topbar-style')) return;
     const style = document.createElement('style');
     style.id = 'topbar-style';
     style.textContent = css;
     document.head.appendChild(style);
-    const bottomWrap = document.createElement('div');
-    bottomWrap.innerHTML = bottombarHtml.trim();
-    document.body.appendChild(bottomWrap.firstChild);
-    const active = currentPageKey();
-    document.querySelectorAll('.bottombar-tab').forEach((t) => {
-      t.classList.toggle('active', t.getAttribute('data-page') === active);
-    });
-    document.body.classList.add('has-bottombar');
   }
 
   function blockGesture(e) { e.preventDefault(); }
@@ -131,7 +75,7 @@ body.topbar-modal-open { overflow: hidden; touch-action: none; }
   }
 
   function boot() {
-    injectStyleAndHTML();
+    injectStyle();
     lockGestures();
     startModalLock();
   }
