@@ -284,9 +284,28 @@ body::after {
   letter-spacing: 0.14em; text-transform: uppercase;
   color: var(--text-tertiary);
 }
+.daily-fact {
+  flex: 1; min-width: 0; align-self: stretch;
+  display: flex; flex-direction: column; justify-content: center; gap: 8px;
+  border-left: 1px solid rgba(255,255,255,0.08); padding-left: 24px;
+}
+.daily-fact-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.daily-fact-label {
+  font-family: var(--font-mono); font-size: 10px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-tertiary);
+}
+.daily-fact-new {
+  background: none; border: none; cursor: pointer; padding: 2px 6px;
+  font-family: var(--font-mono); font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
+  color: var(--text-tertiary); border-radius: 6px; transition: color 0.15s, background 0.15s;
+}
+.daily-fact-new:hover { color: var(--text-primary); background: rgba(255,255,255,0.06); }
+.daily-fact-new:disabled { opacity: 0.4; cursor: default; }
+.daily-fact-text { font-size: 14px; color: var(--text-primary); line-height: 1.6; }
 @media (max-width: 600px) {
   .daily-card { flex-direction: column; align-items: stretch; gap: 20px; padding: 18px; }
   .daily-words { width: 100%; }
+  .daily-fact { border-left: none; padding-left: 0; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px; }
   .day-ring { width: 130px; height: 130px; align-self: center; }
   .day-ring-percent { font-size: 30px; }
 }
@@ -774,6 +793,13 @@ body.goals-syncing #gmCardToday, body.goals-syncing #gmCardTomorrow, body.goals-
           <div class="daily-quote-text"   id="dailyQuoteText"></div>
           <div class="daily-quote-author" id="dailyQuoteAuthor"></div>
         </div>
+      </div>
+      <div class="daily-fact">
+        <div class="daily-fact-head">
+          <div class="daily-fact-label">Fun fact</div>
+          <button type="button" class="daily-fact-new" id="dailyFactNew" title="Show another fact" aria-label="Show another fact">↻ New</button>
+        </div>
+        <div class="daily-fact-text" id="dailyFactText">Loading…</div>
       </div>
     </div>
   </div>
@@ -1522,6 +1548,105 @@ body.goals-syncing #gmCardToday, body.goals-syncing #gmCardTomorrow, body.goals-
     const dayNum = Math.floor((d - new Date(d.getFullYear(), 0, 0)) / 86400000);
     return arr[dayNum % arr.length];
   }
+  // ---------- Fun fact (endless, never repeats) ----------
+  const FACT_SEEN_KEY = 'fun_facts_seen_v1';
+  const FACT_DAY_KEY  = 'fun_fact_day_v1';
+  const FACT_SEEN_MAX = 5000;
+  const FALLBACK_FACTS = [
+    "Octopuses have three hearts, and two of them stop beating when they swim.",
+    "Honey found in ancient Egyptian tombs is still edible after more than 3,000 years.",
+    "A day on Venus is longer than its year.",
+    "Wombat droppings are cube-shaped, which stops them from rolling away.",
+    "The Eiffel Tower grows about 15 cm taller in summer because heat expands its iron.",
+    "Oxford University is older than the Aztec Empire.",
+    "Bananas are berries, but strawberries are not.",
+    "Sharks existed before trees did.",
+    "Cleopatra lived closer in time to the Moon landing than to the building of the Great Pyramid.",
+    "A group of flamingos is called a flamboyance.",
+    "Lightning strikes the Earth roughly 100 times every second.",
+    "The shortest war in history lasted about 38 minutes, between Britain and Zanzibar in 1896.",
+    "Sea otters hold hands while sleeping so they don't drift apart.",
+    "There are more possible chess games than atoms in the observable universe.",
+    "The Great Wall of China is not visible to the naked eye from the Moon.",
+    "Scotland's national animal is the unicorn.",
+    "Vending machines have historically killed more people than sharks.",
+    "The human nose can distinguish over one trillion different scents, by one 2014 estimate.",
+    "Switzerland has a law requiring guinea pigs to be kept with at least one other guinea pig.",
+    "Antarctica is technically a desert because it receives very little precipitation.",
+    "Crows can recognize individual human faces and remember them for years.",
+    "The Roman Empire had a working postal service called the cursus publicus.",
+    "Astronauts can grow up to about 3% taller in space as the spine decompresses.",
+    "A bolt of lightning is about five times hotter than the surface of the Sun.",
+    "Finland has more saunas than cars.",
+  ];
+
+  function hashStr(s) {
+    let h = 5381;
+    for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0;
+    return String(h);
+  }
+  function loadSeenFacts() {
+    const v = storeGet(FACT_SEEN_KEY);
+    return Array.isArray(v) ? v : [];
+  }
+  function markFactSeen(text) {
+    const seen = loadSeenFacts();
+    seen.push(hashStr(text));
+    storeSet(FACT_SEEN_KEY, seen.slice(-FACT_SEEN_MAX));
+  }
+  async function fetchJsonTimeout(url) {
+    const ctl = new AbortController();
+    const t = setTimeout(() => ctl.abort(), 6000);
+    try {
+      const r = await fetch(url, { signal: ctl.signal });
+      if (!r.ok) throw new Error('http ' + r.status);
+      return await r.json();
+    } finally { clearTimeout(t); }
+  }
+  async function randomWebFact() {
+    if (Math.random() < 0.4) {
+      const d = new Date();
+      const j = await fetchJsonTimeout('https://en.wikipedia.org/api/rest_v1/feed/onthisday/events/' + pad2(d.getMonth() + 1) + '/' + pad2(d.getDate()));
+      const ev = (j.events || []).filter(e => e && e.text && e.year);
+      if (!ev.length) throw new Error('no events');
+      const e = ev[Math.floor(Math.random() * ev.length)];
+      return 'On this day in ' + e.year + ': ' + e.text.replace(/\s+$/, '') + (/[.!?]$/.test(e.text) ? '' : '.');
+    }
+    const j = await fetchJsonTimeout('https://uselessfacts.jsph.pl/api/v2/facts/random?language=en');
+    if (!j || !j.text) throw new Error('no fact');
+    return String(j.text).trim();
+  }
+  async function pickNewFact() {
+    const seen = new Set(loadSeenFacts());
+    for (let i = 0; i < 8; i++) {
+      try {
+        const text = await randomWebFact();
+        if (text && !seen.has(hashStr(text))) return text;
+      } catch (e) { break; }
+    }
+    const unseen = FALLBACK_FACTS.filter(f => !seen.has(hashStr(f)));
+    const pool = unseen.length ? unseen : FALLBACK_FACTS;
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+  async function showNewFact(btn) {
+    const el = document.getElementById('dailyFactText');
+    if (btn) btn.disabled = true;
+    try {
+      const text = await pickNewFact();
+      markFactSeen(text);
+      storeSet(FACT_DAY_KEY, { date: getActiveDateString(), text: text });
+      el.textContent = text;
+    } finally { if (btn) btn.disabled = false; }
+  }
+  function initFunFact() {
+    const el = document.getElementById('dailyFactText');
+    const saved = storeGet(FACT_DAY_KEY);
+    if (saved && saved.date === getActiveDateString() && saved.text) el.textContent = saved.text;
+    else showNewFact(null);
+    const btn = document.getElementById('dailyFactNew');
+    btn.addEventListener('click', () => showNewFact(btn));
+  }
+
   function initDailySection() {
     const d = new Date();
     const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
@@ -1533,6 +1658,7 @@ body.goals-syncing #gmCardToday, body.goals-syncing #gmCardTomorrow, body.goals-
     const q = dailyPick(MOTIVATIONAL_QUOTES);
     document.getElementById('dailyQuoteText').textContent = '“' + q.text + '”';
     document.getElementById('dailyQuoteAuthor').textContent = '— ' + q.author;
+    initFunFact();
   }
 
   // ---------- Boot ----------
