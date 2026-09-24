@@ -1523,13 +1523,26 @@ body::after {
   }
 
   // ---------- Boot ----------
-  rollover();
   processStreak();
+  rollover();
   loadToday();
   loadTomorrow();
   renderStreak();
   updateDayRing();
-  setInterval(updateDayRing, 60 * 1000);
+
+  // Roll goals over when the 6 AM day boundary passes while the page is open.
+  let lastActiveDate = getActiveDateString();
+  function checkDayChange() {
+    const d = getActiveDateString();
+    if (d === lastActiveDate) return;
+    lastActiveDate = d;
+    processStreak();
+    rollover();
+    loadToday(); loadTomorrow(); renderStreak();
+  }
+  setInterval(() => { checkDayChange(); updateDayRing(); }, 60 * 1000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) checkDayChange(); });
+  window.addEventListener('focus', checkDayChange);
   startTicker();
   initDailySection();
 
