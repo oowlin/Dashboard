@@ -116,6 +116,7 @@
           schedulePush();
         }
       } catch (e) {}
+      if (typeof config.onReady === 'function') { try { config.onReady(); } catch (e) {} }
       supa.channel('app_state_' + appKey)
         .on('postgres_changes', {
           event: '*', schema: 'public', table: 'app_state', filter: 'key=eq.' + appKey,

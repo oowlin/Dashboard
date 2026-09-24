@@ -452,6 +452,12 @@ body::after {
   box-shadow: inset 3px 0 0 0 #F2C063;
 }
 .gm-row.gm-row-queued .gm-text { color: #FFE2A8; }
+body.goals-syncing #gmCardToday, body.goals-syncing #gmCardTomorrow, body.goals-syncing #goalTickerStage { visibility: hidden; }
+.gm-overdue-tag {
+  flex-shrink: 0; margin-left: 8px; padding: 2px 7px; border-radius: 999px;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--danger); background: rgba(255,107,107,0.14);
+}
 .gm-row.is-drag-over { border-top: 2px solid #6BE3A4; }
 .gm-row.is-queue-flashing { animation: gm-queue-flash 0.48s ease-out; }
 @keyframes gm-queue-flash {
@@ -719,7 +725,7 @@ body::after {
 .cal-refresh-btn:hover { color: var(--text-secondary); }
 </style>
 </head>
-<body>
+<body class="goals-syncing">
 <div class="page">
 
   <h1 class="dash-title">My Dashboard</h1>
@@ -909,20 +915,20 @@ body::after {
     const todayK = 'goals:' + todayDateStr;
     let today = getGoals(todayK);
     const texts = new Set(today.map(g => g.text));
+    const overdue = [];
 
-    storeListKeys('goals:').forEach(k => {
+    storeListKeys('goals:').sort().forEach(k => {
       const dateStr = k.slice('goals:'.length);
       if (dateStr >= todayDateStr) return;
-      const old = getGoals(k);
-      old.forEach(g => {
+      getGoals(k).forEach(g => {
         if (!g.done && g.text && !texts.has(g.text)) {
-          today.push({ text: g.text, done: false });
+          overdue.push({ text: g.text, done: false, overdue: true });
           texts.add(g.text);
         }
       });
       storeDelete(k);
     });
-    setGoals(todayK, today);
+    if (overdue.length) setGoals(todayK, overdue.concat(today));
   }
 
   // ---------- streak ----------
@@ -1198,6 +1204,13 @@ body::after {
     text.textContent = goal.text;
     li.appendChild(text);
     makeInlineEdit(text, null, idx, key, reload);
+
+    if (goal.overdue && !goal.done) {
+      const tag = document.createElement('span');
+      tag.className = 'gm-overdue-tag';
+      tag.textContent = 'Overdue';
+      li.appendChild(tag);
+    }
 
     const queueBtn = document.createElement('button');
     queueBtn.type = 'button';
@@ -1532,13 +1545,15 @@ body::after {
 
   // Roll goals over when the 6 AM day boundary passes while the page is open.
   let lastActiveDate = getActiveDateString();
-  function checkDayChange() {
-    const d = getActiveDateString();
-    if (d === lastActiveDate) return;
-    lastActiveDate = d;
+  function refreshDay() {
+    lastActiveDate = getActiveDateString();
     processStreak();
     rollover();
     loadToday(); loadTomorrow(); renderStreak();
+  }
+  window.goalsRefreshDay = refreshDay;
+  function checkDayChange() {
+    if (getActiveDateString() !== lastActiveDate) refreshDay();
   }
   setInterval(() => { checkDayChange(); updateDayRing(); }, 60 * 1000);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) checkDayChange(); });
@@ -1554,13 +1569,26 @@ body::after {
 </script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-  if (typeof initCloudSync !== 'function') return;
+  var page = document.body;
+  var revealed = false;
+  function reveal() {
+    if (revealed) return;
+    revealed = true;
+    page.classList.remove('goals-syncing');
+  }
+  if (typeof initCloudSync !== 'function' || !window.supabase) { reveal(); return; }
+  page.classList.add('goals-syncing');
+  setTimeout(reveal, 2000);
   initCloudSync({
     appKey: 'goals',
     syncedPrefixes: ['goals:'],
     onApplied: function () {
+      if (window.goalsRefreshDay) window.goalsRefreshDay();
       window.dispatchEvent(new CustomEvent('goals-changed'));
-      window.dispatchEvent(new Event('storage'));
+    },
+    onReady: function () {
+      if (window.goalsRefreshDay) window.goalsRefreshDay();
+      reveal();
     }
   });
 });
